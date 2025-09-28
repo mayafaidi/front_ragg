@@ -112,14 +112,20 @@ backgroundColor: "transparent",
               fullWidth
               error={!!errors.email}
               helperText={errors.email?.message}
-                 sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-                backgroundColor: "#fff",
-              },
-            }}
-            />
+                FormHelperTextProps={{
+    sx: {
+      color: "red !important", // نستخدم !important لتأكيد اللون
+      fontWeight: 500,
+    },
+  }}
+  sx={{
+    mb: 2,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+    },
+  }}
+/>
 
             <Button
               type="submit"
