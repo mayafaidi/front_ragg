@@ -30,6 +30,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
+    mode:"onchange"
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +69,7 @@ export default function Login() {
           padding: "2rem",
           borderRadius: "12px",
           textAlign: "center",
-          backgroundColor: "#0f172a99", 
+          backgroundColor: "transparent",
           backdropFilter: "blur(10px)",
         }}
       >

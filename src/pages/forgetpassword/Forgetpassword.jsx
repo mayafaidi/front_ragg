@@ -15,11 +15,17 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const schema = yup.object({
+
   email: yup
     .string()
     .required("Email is required")
-    .email("Invalid email format"),
+    .email("Invalid email format")
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@stu\.najah\.edu$/,
+      "Email must be a student email (@stu.najah.edu)"
+    ),
 });
+
 
 export default function ForgetPassword() {
   const {
@@ -79,7 +85,7 @@ export default function ForgetPassword() {
           padding: "2rem",
           borderRadius: "12px",
           textAlign: "center",
-          backgroundColor: "#0f172a99",
+backgroundColor: "transparent",
           backdropFilter: "blur(10px)",
         }}
       >
@@ -106,7 +112,13 @@ export default function ForgetPassword() {
               fullWidth
               error={!!errors.email}
               helperText={errors.email?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+                 sx={{
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                backgroundColor: "#fff",
+              },
+            }}
             />
 
             <Button

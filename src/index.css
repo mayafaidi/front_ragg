@@ -15,5 +15,5 @@ p, span, a {
 }
 body{
   background: linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%) !important;
-  color: white !important;
+  color: white ;
 }
