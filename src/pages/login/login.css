@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1, h2, h3 {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700; /* عريض */
+}
+
+p, span, a, label, input {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 400;
+  color: white !important;
+}
+
+body {
+  background: linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%) !important;
+  color: white !important;
+  min-height: 100vh;
+}
+
+/* ✅ تأثير الاهتزاز عند الـ hover */
+.shakeBtn:hover:not(:disabled) {
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+/* ✅ تحسين شكل الحقول */
+.MuiOutlinedInput-root {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.MuiInputLabel-root {
+  color: white !important;
+}
+
+.MuiOutlinedInput-input {
+  color: white !important;
+}
