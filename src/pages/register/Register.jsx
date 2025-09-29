@@ -14,7 +14,7 @@ import * as yup from "yup";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-// ✅ تعريف الـ Yup Schema
+
 const schema = yup.object({
   firstName: yup
     .string()
@@ -117,24 +117,24 @@ export default function Register() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              {...register("firstName")}
-              label="First Name"
-              variant="outlined"
-              fullWidth
-              error={!!errors.firstName}
-              helperText={errors.firstName?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
-            />
-            <TextField
-              {...register("lastName")}
-              label="Last Name"
-              variant="outlined"
-              fullWidth
-              error={!!errors.lastName}
-              helperText={errors.lastName?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
-            />
+            <Box sx={{ display: "flex", gap: 2 }}>
+  <TextField
+    {...register("firstName")}
+    label="First Name"
+    variant="outlined"
+    error={!!errors.firstName}
+    helperText={errors.firstName?.message}
+    sx={{ backgroundColor: "white", borderRadius: 1, flex: 1 }}
+  />
+  <TextField
+    {...register("lastName")}
+    label="Last Name"
+    variant="outlined"
+    error={!!errors.lastName}
+    helperText={errors.lastName?.message}
+    sx={{ backgroundColor: "white", borderRadius: 1, flex: 1 }}
+  />
+</Box>
             <TextField
               {...register("userName")}
               label="UserName"
