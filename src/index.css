@@ -6,12 +6,12 @@
 }
 h1, h2, h3 {
   font-family: 'Cairo', sans-serif;
-  font-weight: 700; /* عريض */
+  font-weight: 700;
 }
 p, span, a {
   font-family: 'Cairo', sans-serif;
-  font-weight: 400; /* عادي */
-  color: white !important;
+  font-weight: 400;
+  /* color: white !important; */
 }
 body{
   background: linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%) !important;
