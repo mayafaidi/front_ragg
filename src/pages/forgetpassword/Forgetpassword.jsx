@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Box,
@@ -14,8 +14,10 @@ import * as yup from "yup";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const schema = yup.object({
+import "aos/dist/aos.css";
+import AOS from "aos";
 
+const schema = yup.object({
   email: yup
     .string()
     .required("Email is required")
@@ -26,7 +28,6 @@ const schema = yup.object({
     ),
 });
 
-
 export default function ForgetPassword() {
   const {
     register,
@@ -34,6 +35,7 @@ export default function ForgetPassword() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    mode: "all",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -66,6 +68,13 @@ export default function ForgetPassword() {
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+    });
+    AOS.refresh();
+  }, []);
 
   return (
     <Box
@@ -79,13 +88,15 @@ export default function ForgetPassword() {
       }}
     >
       <Paper
+        data-aos="fade-down"
+        data-aos-duration="500"
         elevation={6}
         sx={{
           width: "400px",
           padding: "2rem",
           borderRadius: "12px",
           textAlign: "center",
-backgroundColor: "transparent",
+          backgroundColor: "transparent",
           backdropFilter: "blur(10px)",
         }}
       >
@@ -97,6 +108,7 @@ backgroundColor: "transparent",
             fontWeight: 700,
             color: "white",
             fontFamily: "Cairo, Poppins, sans-serif",
+            "&::first-letter": { color: "red" },
           }}
         >
           Forget Password
@@ -112,20 +124,14 @@ backgroundColor: "transparent",
               fullWidth
               error={!!errors.email}
               helperText={errors.email?.message}
-                FormHelperTextProps={{
-    sx: {
-      color: "red !important", // نستخدم !important لتأكيد اللون
-      fontWeight: 500,
-    },
-  }}
-  sx={{
-    mb: 2,
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-    },
-  }}
-/>
+              sx={{
+                mb: -1,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#fff",
+                },
+              }}
+            />
 
             <Button
               type="submit"

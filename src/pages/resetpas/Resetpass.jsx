@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -13,6 +13,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
+import "aos/dist/aos.css";
+import AOS from "aos";
 
 const schema = yup.object({
   code: yup.string().required("Verification code is required"),
@@ -37,6 +39,7 @@ export default function ResetPass() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    mode: "all",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -70,7 +73,13 @@ export default function ResetPass() {
       setIsLoading(false);
     }
   };
-
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+    });
+    AOS.refresh();
+  }, []);
   return (
     <Box
       sx={{
@@ -83,6 +92,8 @@ export default function ResetPass() {
       }}
     >
       <Paper
+        data-aos="fade-down"
+        data-aos-duration="500"
         elevation={6}
         sx={{
           width: "400px",
@@ -101,6 +112,7 @@ export default function ResetPass() {
             fontWeight: 700,
             color: "white",
             fontFamily: "Cairo, Poppins, sans-serif",
+            "&::first-letter": { color: "red" },
           }}
         >
           Reset Password
@@ -114,7 +126,13 @@ export default function ResetPass() {
               fullWidth
               value={email}
               disabled
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+              sx={{
+                mb: -1,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#fff",
+                },
+              }}
             />
 
             <TextField
@@ -152,7 +170,7 @@ export default function ResetPass() {
             <Button
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={isLoading || Object.keys(errors).length > 0}
               sx={{
                 py: 1.2,
                 fontSize: "14px",
