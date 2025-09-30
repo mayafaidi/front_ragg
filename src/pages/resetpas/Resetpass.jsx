@@ -153,7 +153,7 @@ export default function ResetPass() {
               value={email}
               disabled
               sx={{
-                mb: -1,
+                mb: 1,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "8px",
                   backgroundColor: "#fff",
@@ -168,7 +168,13 @@ export default function ResetPass() {
               fullWidth
               error={!!errors.code}
               helperText={errors.code?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+              sx={{
+              mb: 0.5,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                backgroundColor: "#fff",
+              },
+            }}
             />
 
             <TextField
@@ -179,7 +185,13 @@ export default function ResetPass() {
               fullWidth
               error={!!errors.newPassword}
               helperText={errors.newPassword?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+              sx={{
+              mb: 0.5,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                backgroundColor: "#fff",
+              },
+            }}
             />
 
             <TextField
@@ -190,7 +202,13 @@ export default function ResetPass() {
               fullWidth
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+             sx={{
+              mb: 0.5,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                backgroundColor: "#fff",
+              },
+            }}
             />
 
             <Button

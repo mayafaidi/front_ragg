@@ -165,7 +165,7 @@ export default function ForgetPassword() {
             <Button
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={isLoading ||Object.keys(errors).length>0}
               sx={{
                 py: 1.2,
                 fontSize: "14px",
