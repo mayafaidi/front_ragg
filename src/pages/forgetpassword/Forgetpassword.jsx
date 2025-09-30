@@ -13,7 +13,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "aos/dist/aos.css";
 import AOS from "aos";
 
@@ -54,17 +55,45 @@ export default function ForgetPassword() {
 
       console.log("Response:", response.data);
       setMessage("A verification code has been sent to your email!");
+// ✅ Toast نجاح
+    toast.success("📧 A verification code has been sent to your email!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+      transition: Bounce,
+    });
 
-      setTimeout(() => {
-        navigate("/reset-password", { state: { email: data.email } });
-      }, 2000);
-    } catch (error) {
+    setTimeout(() => {
+      navigate("/reset-password", { state: { email: data.email } });
+    }, 2000);
+  }
+  catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      setMessage(
-        error.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
-    } finally {
+      // setMessage(
+      //   error.response?.data?.message ||
+      //     "Something went wrong. Please try again."
+      // );
+     // ❌ Toast خطأ
+    toast.error(
+      error.response?.data?.message ||
+        "Something went wrong. Please try again.",
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        transition: Bounce,
+      }
+    );
+  } 
+     finally {
       setIsLoading(false);
     }
   };
@@ -165,9 +194,12 @@ export default function ForgetPassword() {
                 {message}
               </Typography>
             )}
+            
           </Box>
         </form>
       </Paper>
+      <ToastContainer />
+      
     </Box>
   );
 }

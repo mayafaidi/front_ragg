@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import {
   Typography,
   Box,
@@ -15,7 +16,8 @@ import * as yup from "yup";
 import axios from "axios";
 import "aos/dist/aos.css";
 import AOS from "aos";
-
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const schema = yup.object({
   code: yup.string().required("Verification code is required"),
   newPassword: yup
@@ -60,15 +62,39 @@ export default function ResetPass() {
       );
 
       if (response.status === 200) {
-        setMessage("Password has been changed successfully!");
-        setTimeout(() => navigate("/login"), 2000);
+       // setMessage("Password has been changed successfully!");
+         toast.success("✅ Password has been changed successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+          transition: Bounce,
+        });
+       setTimeout(() => navigate("/login"), 3000);
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      setMessage(
+      toast.error(
         error.response?.data?.message ||
-          "Password reset failed. Please check the code and try again."
+          "❌ Password reset failed. Please check the code and try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+          transition: Bounce,
+        }
       );
+      // setMessage(
+      //   error.response?.data?.message ||
+      //     "Password reset failed. Please check the code and try again."
+      // );
     } finally {
       setIsLoading(false);
     }
@@ -202,6 +228,8 @@ export default function ResetPass() {
           </Box>
         </form>
       </Paper>
+      
+      <ToastContainer />
     </Box>
   );
 }

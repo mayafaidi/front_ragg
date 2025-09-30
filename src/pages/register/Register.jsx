@@ -15,7 +15,8 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import "aos/dist/aos.css";
 import AOS from "aos";
-
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const schema = yup.object({
   firstName: yup
     .string()
@@ -73,14 +74,35 @@ export default function Register() {
       );
 
       if (response.data.success) {
-        alert("Registration successful! Please log in.");
-        navigate("/login");
+       // alert("Registration successful! Please log in.");
+       // navigate("/login");
+        toast.success(" Registration successful! Please log in.", {
+          position: "top-right",
+          autoClose: 2500,
+          transition: Bounce,
+        });
+        setTimeout(() => navigate("/login"), 2500);
       } else {
-        alert("Registration failed. Please try again.");
+        //alert("Registration failed. Please try again.");
+       toast.error("Registration failed. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          transition: Bounce,
+        });
+      
+      
       }
     } catch (error) {
-      console.error("Axios Error:", error.response?.data || error.message);
-      alert("Registration failed. Please check your data.");
+      const errorMessage =
+  error.response?.data?.message ||
+  error.response?.data?.errors ||
+  "Registration failed. Please check your data.";
+
+toast.error(` ${errorMessage}`, {
+  position: "top-right",
+  autoClose: 3000,
+  transition: Bounce,
+});
     } finally {
       setIsLoading(false);
     }
@@ -262,10 +284,12 @@ export default function Register() {
               >
                 Login
               </Link>
+              
             </Typography>
           </Box>
         </form>
       </Paper>
+      <ToastContainer />
     </Box>
   );
 }

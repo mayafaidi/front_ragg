@@ -17,6 +17,8 @@ import axios from "axios";
 import AOS from "aos";
 
 import style from "./Login.module.css";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const schema = yup.object({
   email: yup
@@ -55,9 +57,32 @@ export default function Login() {
         data
       );
       console.log("Login Success:", response.data);
-      navigate("/");
+       toast.success(" Logged in successfully!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+      transition: Bounce,
+    });
+       setTimeout(() => navigate("/"), 3000);
     } catch (error) {
       console.error("Axios Error:", error.response?.data || error.message);
+    toast.error(
+      error.response?.data?.message || "Login failed! Please try again.",
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        transition: Bounce,
+      }
+    );
     } finally {
       setIsLoading(false);
     }
@@ -209,6 +234,7 @@ export default function Login() {
           </Typography>
         </form>
       </Paper>
+        <ToastContainer />
     </Box>
   );
 }
