@@ -77,25 +77,30 @@ export default function ResetPass() {
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      toast.error(
-        error.response?.data?.message ||
-          "❌ Password reset failed. Please check the code and try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored",
-          transition: Bounce,
-        }
-      );
-      // setMessage(
-      //   error.response?.data?.message ||
-      //     "Password reset failed. Please check the code and try again."
-      // );
-    } finally {
+
+  const errorMessage =
+    error.response?.data?.message ||
+    error.response?.data?.errors ||
+    error.response?.data ||
+    error.message ||
+    "An unexpected error occurred.";
+
+  toast.error(
+    typeof errorMessage === "object"
+      ? JSON.stringify(errorMessage)
+      : errorMessage,
+    {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      transition: Bounce,
+    }
+  );
+} finally {
       setIsLoading(false);
     }
   };

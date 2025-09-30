@@ -93,16 +93,24 @@ export default function Register() {
       
       }
     } catch (error) {
-      const errorMessage =
-  error.response?.data?.message ||
-  error.response?.data?.errors ||
-  "Registration failed. Please check your data.";
+    const errorMessage =
+    error.response?.data?.message ||
+    error.response?.data?.errors ||
+    error.response?.data ||
+    error.message ||
+    "An unexpected error occurred.";
 
-toast.error(` ${errorMessage}`, {
-  position: "top-right",
-  autoClose: 3000,
-  transition: Bounce,
-});
+  toast.error(
+    typeof errorMessage === "object"
+      ? JSON.stringify(errorMessage)
+      : errorMessage,
+    {
+      position: "top-right",
+      autoClose: 3000,
+      transition: Bounce,
+    }
+  );
+
     } finally {
       setIsLoading(false);
     }
@@ -231,7 +239,9 @@ toast.error(` ${errorMessage}`, {
                   backgroundColor: "#fff",
                 },
               }}
+              
             />
+           
             <TextField
               {...register("confirmPassword")}
               label="Confirm Password"

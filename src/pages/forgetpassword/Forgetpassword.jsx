@@ -72,26 +72,33 @@ export default function ForgetPassword() {
     }, 2000);
   }
   catch (error) {
-      console.error("Error:", error.response?.data || error.message);
-      // setMessage(
-      //   error.response?.data?.message ||
-      //     "Something went wrong. Please try again."
-      // );
-     // ❌ Toast خطأ
-    toast.error(
-      error.response?.data?.message ||
-        "Something went wrong. Please try again.",
-      {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        transition: Bounce,
-      }
-    );
+    
+console.error("Error:", error.response?.data || error.message);
+
+  const backendError = error.response?.data;
+  const errorMessage =
+    backendError?.message ||
+    backendError?.errors ||
+    backendError ||
+    error.message ||
+    "An unexpected error occurred.";
+
+  toast.error(
+    typeof errorMessage === "object"
+      ? JSON.stringify(errorMessage)
+      : errorMessage,
+    {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      transition: Bounce,
+    }
+  );
+
   } 
      finally {
       setIsLoading(false);
