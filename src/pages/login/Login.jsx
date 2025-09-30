@@ -49,42 +49,108 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data) => {
-    console.log("Sending login data:", data);
     try {
       setIsLoading(true);
       const response = await axios.post(
         "https://askly.runasp.net/api/Accounts/Login",
         data
       );
-      console.log("Login Success:", response.data);
-       toast.success(response.data.message, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "light",
-      transition: Bounce,
-    });
-       setTimeout(() => navigate("/"), 3000);
+      toast.success(
+        <Typography sx={{ color: "#1E3A8A", fontWeight: "bold" }}>
+          {response.data.message}
+        </Typography>,
+        {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light", // خلفية بيضاء
+          transition: Bounce,
+        }
+      );
+      setTimeout(() => navigate("/"), 3000);
     } catch (error) {
-      console.error("Axios Error:", error.response?.data || error.message);
-    toast.error(
-      error.response?.data?.message || "Login failed! Please try again.",
-      {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        transition: Bounce,
+      const message = error.response?.data.message || error.message;
+      if (message.toLowerCase().includes("confirm")) {
+        // رسالة الخطأ بسبب البريد غير مفعل
+        toast.error(
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
+              minWidth: 250,
+            }}
+          >
+            <Typography variant="body2" sx={{ flex: 1, color: "#e94e77" }}>
+              {message}
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => resendConfirmation(data.email)}
+              sx={{
+                textTransform: "none",
+                fontWeight: "bold",
+                backgroundColor: "#1E3A8A", // أزرق غامق ليناسب الأبيض
+                color: "#fff",
+                "&:hover": { backgroundColor: "#152A5C" },
+              }}
+            >
+              إعادة إرسال الرابط
+            </Button>
+          </Box>,
+          {
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light", // خلفية بيضاء
+          }
+        );
+      } else {
+        // أي خطأ آخر
+        toast.error(
+          <Typography sx={{ color: "#e94e77" }}>{message}</Typography>,
+          {
+            position: "top-right",
+            autoClose: 3000,
+            transition: Bounce,
+            theme: "light",
+          }
+        );
       }
-    );
     } finally {
       setIsLoading(false);
+    }
+  };
+  const resendConfirmation = async (email) => {
+    try {
+      const res = await axios.post(
+        "https://askly.runasp.net/api/Accounts/resend-confirmation",
+        { email }
+      );
+      toast.success(
+        <Typography sx={{ color: "#1E3A8A", fontWeight: "bold" }}>
+          {res.data.message}
+        </Typography>,
+        {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "light",
+        }
+      );
+    } catch (err) {
+      toast.error(
+        <Typography sx={{ color: "#e94e77" }}>
+          فشل إرسال الرابط. حاول مرة أخرى.
+        </Typography>,
+        { position: "top-right", autoClose: 3000, theme: "light" }
+      );
     }
   };
   useEffect(() => {
@@ -234,7 +300,7 @@ export default function Login() {
           </Typography>
         </form>
       </Paper>
-        <ToastContainer />
+      <ToastContainer />
     </Box>
   );
 }
