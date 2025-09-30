@@ -57,7 +57,7 @@ export default function Login() {
         data
       );
       console.log("Login Success:", response.data);
-       toast.success(" Logged in successfully!", {
+       toast.success(response.data.message, {
       position: "top-right",
       autoClose: 3000,
       hideProgressBar: false,
