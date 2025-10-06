@@ -70,7 +70,7 @@ export default function Login() {
           transition: Bounce,
         }
       );
-      setTimeout(() => navigate("/"), 3000);
+      setTimeout(() => navigate("/Home"), 3000);
     } catch (error) {
       const message = error.response?.data.message || error.message;
       if (message.toLowerCase().includes("confirm")) {
