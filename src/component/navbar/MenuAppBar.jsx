@@ -11,25 +11,30 @@ import Menu from "@mui/material/Menu";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
-import CssIcon from '@mui/icons-material/Style'; // CSS
-import ComputerIcon from '@mui/icons-material/Computer'; // MIS
-import SmartToyIcon from '@mui/icons-material/SmartToy'; // CAP-AI
-import CodeIcon from '@mui/icons-material/Code'; // CAP-SW
-import AccountTreeIcon from '@mui/icons-material/AccountTree'; // NIS
+import CssIcon from "@mui/icons-material/Style"; // CSS
+import ComputerIcon from "@mui/icons-material/Computer"; // MIS
+import SmartToyIcon from "@mui/icons-material/SmartToy"; // CAP-AI
+import CodeIcon from "@mui/icons-material/Code"; // CAP-SW
+import AccountTreeIcon from "@mui/icons-material/AccountTree"; // NIS
+import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function MenuAppBar() {
-  const [auth, setAuth] = React.useState(true);
-  const [accountAnchorEl, setAccountAnchorEl] = React.useState(null);
-
+  const [auth, setAuth] = useState(true);
+  const [accountAnchorEl, setAccountAnchorEl] = useState(null);
+  const navigate = useNavigate();
   const handleAccountMenu = (event) => {
     setAccountAnchorEl(event.currentTarget);
   };
   const handleAccountClose = () => {
     setAccountAnchorEl(null);
   };
-
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
   // حالة الـ Dropdown
-  const [specialty, setSpecialty] = React.useState("");
+  const [specialty, setSpecialty] = useState("");
 
   const handleSpecialtyChange = (event) => {
     setSpecialty(event.target.value);
@@ -55,33 +60,33 @@ export default function MenuAppBar() {
               onChange={handleSpecialtyChange}
               label="Choose"
               sx={{
-      color: "white",
-      ".MuiSelect-select": { padding: "8px 0" }, // تضبيط المسافة
-      ".MuiSvgIcon-root": { color: "white" }, // السهم
-    }}
+                color: "white",
+                ".MuiSelect-select": { padding: "8px 0" }, // تضبيط المسافة
+                ".MuiSvgIcon-root": { color: "white" }, // السهم
+              }}
             >
-<MenuItem value="css">
-  <CssIcon sx={{ mr: 1 }} /> CSS
-</MenuItem>
-<MenuItem value="mis">
-  <ComputerIcon sx={{ mr: 1 }} /> MIS
-</MenuItem>
-<MenuItem value="cap-ai">
-  <SmartToyIcon sx={{ mr: 1 }} /> CAP-AI
-</MenuItem>
-<MenuItem value="cap-sw">
-  <CodeIcon sx={{ mr: 1 }} /> CAP-SW
-</MenuItem>
-<MenuItem value="nis">
-  <AccountTreeIcon sx={{ mr: 1 }} /> NIS
-</MenuItem>
+              <MenuItem value="css">
+                <CssIcon sx={{ mr: 1 }} /> CSS
+              </MenuItem>
+              <MenuItem value="mis">
+                <ComputerIcon sx={{ mr: 1 }} /> MIS
+              </MenuItem>
+              <MenuItem value="cap-ai">
+                <SmartToyIcon sx={{ mr: 1 }} /> CAP-AI
+              </MenuItem>
+              <MenuItem value="cap-sw">
+                <CodeIcon sx={{ mr: 1 }} /> CAP-SW
+              </MenuItem>
+              <MenuItem value="nis">
+                <AccountTreeIcon sx={{ mr: 1 }} /> NIS
+              </MenuItem>
             </Select>
           </FormControl>
 
           {/* أيقونة الحساب */}
           {auth && (
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Typography sx={{mr:1}}>maya </Typography>
+              <Typography sx={{ mr: 1 }}>maya </Typography>
               <IconButton
                 size="large"
                 aria-controls="menu-appbar"
@@ -91,7 +96,7 @@ export default function MenuAppBar() {
               >
                 <AccountCircle />
               </IconButton>
-              
+
               <Menu
                 anchorEl={accountAnchorEl}
                 open={Boolean(accountAnchorEl)}
@@ -99,6 +104,14 @@ export default function MenuAppBar() {
               >
                 <MenuItem onClick={handleAccountClose}>Profile</MenuItem>
                 <MenuItem onClick={handleAccountClose}>My account</MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleAccountClose();
+                    handleLogout();
+                  }}
+                >
+                  logout
+                </MenuItem>
               </Menu>
             </Box>
           )}

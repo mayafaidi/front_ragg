@@ -55,6 +55,8 @@ export default function Login() {
         "https://askly.runasp.net/api/Accounts/Login",
         data
       );
+      console.log(response.data.data);
+      localStorage.setItem("token", response.data.data.token);
       toast.success(
         <Typography sx={{ color: "#1E3A8A", fontWeight: "bold" }}>
           {response.data.message}
@@ -70,7 +72,7 @@ export default function Login() {
           transition: Bounce,
         }
       );
-      setTimeout(() => navigate("/Home"), 3000);
+      setTimeout(() => navigate("/Home"), 1000);
     } catch (error) {
       const message = error.response?.data.message || error.message;
       if (message.toLowerCase().includes("confirm")) {
