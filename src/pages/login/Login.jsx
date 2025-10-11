@@ -57,6 +57,7 @@ export default function Login() {
       );
       console.log(response.data.data);
       localStorage.setItem("token", response.data.data.token);
+      localStorage.setItem("usrname", response.data.data.username);
       toast.success(
         <Typography sx={{ color: "#1E3A8A", fontWeight: "bold" }}>
           {response.data.message}
