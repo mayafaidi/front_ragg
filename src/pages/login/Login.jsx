@@ -52,7 +52,7 @@ export default function Login() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "https://askly.runasp.net/api/Accounts/Login",
+        "https://localhost:7017/api/Accounts/Login",
         data
       );
       console.log(response.data.data);
@@ -134,7 +134,7 @@ export default function Login() {
   const resendConfirmation = async (email) => {
     try {
       const res = await axios.post(
-        "https://askly.runasp.net/api/Accounts/resend-confirmation",
+        "https://localhost:7017/api/Accounts/resend-confirmation",
         { email }
       );
       toast.success(

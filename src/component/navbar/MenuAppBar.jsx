@@ -52,7 +52,11 @@ const MyAppBar = styled(MuiAppBar, {
   }),
 }));
 
-export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }) {
+export default function MenuAppBar({
+  open,
+  handleDrawerOpen,
+  handleDrawerClose,
+}) {
   const [auth] = useState(true);
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const [specialty, setSpecialty] = useState("");
@@ -64,12 +68,15 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
     localStorage.removeItem("token");
     navigate("/login");
   };
-  const handleSpecialtyChange = (event) => setSpecialty(event.target.value);
+  const handleSpecialtyChange = (event) => {
+    setSpecialty(event.target.value);
+    localStorage.setItem("currentSpecialty", event.target.value);
+  };
 
   return (
     <>
       <MyAppBar position="fixed" open={open}>
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between", fontFamily: "'Cairo', sans-serif" }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <FormControl
               size="small"
@@ -79,8 +86,17 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
                 borderRadius: "12px",
                 mr: 2,
                 "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                "& .MuiSelect-icon": { color: "#00bcd4", right: "auto", left: 8 },
-                "& .MuiSelect-select": { color: "white", textAlign: "right", fontWeight: 500, paddingRight: "8px" },
+                "& .MuiSelect-icon": {
+                  color: "#00bcd4",
+                  right: "auto",
+                  left: 8,
+                },
+                "& .MuiSelect-select": {
+                  color: "white",
+                  textAlign: "right",
+                  fontWeight: 500,
+                  paddingRight: "8px",
+                },
                 "&:hover": { backgroundColor: "rgba(0, 188, 212, 0.15)" },
               }}
             >
@@ -89,33 +105,68 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
                 onChange={handleSpecialtyChange}
                 displayEmpty
                 MenuProps={{
-                  PaperProps: { sx: { direction: "rtl", bgcolor: "#0b162b", color: "white", fontFamily: "'Cairo', sans-serif" } },
+                  PaperProps: {
+                    sx: {
+                      direction: "rtl",
+                      bgcolor: "#0b162b",
+                      color: "white",
+                    },
+                  },
                 }}
               >
-                <MenuItem value="" disabled>🎓 اختر تخصصك</MenuItem>
+                <MenuItem value="" disabled>
+                  🎓 اختر تخصصك
+                </MenuItem>
                 <MenuItem value="General">عام</MenuItem>
                 <MenuItem value="CS">علم الحاسوب</MenuItem>
-                <MenuItem value="IT">الأمن السيبراني</MenuItem>
-                <MenuItem value="cap-SW">علم الحاسوب تركيز برمجيات</MenuItem>
-                <MenuItem value="cap-AI">علم الحاسوب تركيز الذكاء الاصطناعي</MenuItem>
+                <MenuItem value="CSec">الأمن السيبراني</MenuItem>
+                <MenuItem value="CAP">علم الحاسوب في سوق العمل</MenuItem>
+                <MenuItem value="CAP_SW">علم الحاسوب تركيز برمجيات</MenuItem>
+                <MenuItem value="CAP_AI">
+                  علم الحاسوب تركيز الذكاء الاصطناعي
+                </MenuItem>
                 <MenuItem value="MIS">أنظمة المعلومات الإدارية</MenuItem>
               </Select>
             </FormControl>
 
             {auth && (
               <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-                <Typography sx={{ mr: 1, fontFamily: "'Cairo', sans-serif" }}>مايا</Typography>
-                <IconButton size="large" onClick={handleAccountMenu} color="inherit">
+                <Typography sx={{ mr: 1 }}>مايا</Typography>
+                <IconButton
+                  size="large"
+                  onClick={handleAccountMenu}
+                  color="inherit"
+                >
                   <AccountCircle />
                 </IconButton>
-                <Menu anchorEl={accountAnchorEl} open={Boolean(accountAnchorEl)} onClose={handleAccountClose}>
-                  <MenuItem onClick={() => { handleAccountClose(); handleLogout(); }}>تسجيل الخروج</MenuItem>
+                <Menu
+                  anchorEl={accountAnchorEl}
+                  open={Boolean(accountAnchorEl)}
+                  onClose={handleAccountClose}
+                  PaperProps={{
+                    sx: {
+                      bgcolor: "rgba(11,22,43)",
+                      color: "white",
+                    },
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      handleAccountClose();
+                      handleLogout();
+                    }}
+                  >
+                    تسجيل الخروج
+                  </MenuItem>
                 </Menu>
               </Box>
             )}
           </Box>
 
-          <Typography variant="h6" sx={{ textAlign: "right", flexGrow: 1, fontFamily: "'Cairo', sans-serif", fontWeight: 700 }}>
+          <Typography
+            variant="h6"
+            sx={{ textAlign: "right", flexGrow: 1, fontWeight: 700 }}
+          >
             Askly
           </Typography>
 
@@ -128,29 +179,50 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
       <Drawer
         sx={{
           width: drawerWidth,
-          flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
             background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
             color: "white",
-            fontFamily: "'Cairo', sans-serif",
           },
         }}
         variant="persistent"
         anchor="right"
         open={open}
       >
-        <Box sx={{ display: "flex", alignItems: "center", p: 1, borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
-          <IconButton onClick={handleDrawerClose}><ChevronRightIcon sx={{ color: "white" }} /></IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: 1,
+            borderBottom: "1px solid rgba(255,255,255,0.2)",
+          }}
+        >
+          <IconButton onClick={handleDrawerClose}>
+            <ChevronRightIcon sx={{ color: "white" }} />
+          </IconButton>
           <Typography sx={{ ml: 1 }}>المحادثات</Typography>
         </Box>
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
 
-        
-        <Box sx={{ display: "flex", alignItems: "center", p: 1.5, justifyContent: "center" }}>
-          <Button sx={{ backgroundColor: "rgba(0,188,212,0.8)", color: "white", borderRadius: "8px", textTransform: "none", fontFamily: "'Cairo', sans-serif", "&:hover": { backgroundColor: "#00acc1" } }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: 1.5,
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            sx={{
+              backgroundColor: "#00BCD4",
+              color: "white",
+              borderRadius: "8px",
+              textTransform: "none",
+              "&:hover": { backgroundColor: "#0097a7" },
+            }}
+          >
             إنشاء محادثة جديدة +
           </Button>
         </Box>
@@ -165,21 +237,37 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
             sx={{
               bgcolor: "rgba(255,255,255,0.1)",
               borderRadius: "8px",
-              input: { color: "white", fontFamily: "'Cairo', sans-serif" },
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.2)" },
-              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#00bcd4" },
+              input: { color: "white" },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.2)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#00bcd4",
+              },
             }}
           />
         </Box>
 
-       
         <List>
-          <ListItem button selected>
+          <ListItem
+            button
+            selected
+            divider
+            sx={{
+              direction: "rtl",
+              justifyContent: "flex-end",
+              textAlign: "right",
+              "&:hover": {
+                cursor: "pointer",
+                backgroundColor: "rgba(0,188,212,0.2)",
+              },
+            }}
+          >
             <ListItemText
               primary="محادثة 1"
               secondary="مساعدة في React"
-              primaryTypographyProps={{ color: "#fff", fontFamily: "'Cairo', sans-serif" }}
-              secondaryTypographyProps={{ color: "#aaa", fontFamily: "'Cairo', sans-serif" }}
+              primaryTypographyProps={{ color: "#fff" }}
+              secondaryTypographyProps={{ color: "#aaa" }}
             />
           </ListItem>
         </List>

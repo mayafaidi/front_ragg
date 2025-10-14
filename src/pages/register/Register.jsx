@@ -69,7 +69,7 @@ export default function Register() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "https://askly.runasp.net/api/Accounts/Register",
+        "https://localhost:7017/api/Accounts/Register",
         data
       );
 

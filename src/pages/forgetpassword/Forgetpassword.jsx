@@ -49,7 +49,7 @@ export default function ForgetPassword() {
       setMessage("");
 
       const response = await axios.post(
-        "https://askly.runasp.net/api/Accounts/ForgetPassword",
+        "https://localhost:7017/api/Accounts/ForgetPassword",
         data
       );
 

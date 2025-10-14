@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  IconButton,
-  TextField,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { Box, IconButton, TextField, Typography, Paper } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
 
@@ -74,7 +68,7 @@ export default function Home() {
                   maxWidth: "75%",
                   bgcolor:
                     msg.sender === "user"
-                      ? "rgba(0, 188, 212, 0.9)"
+                      ? "rgba(0,188,212,0.1)" // أزرق شفاف بدل الفيروزي الصارخ
                       : "rgba(255, 255, 255, 0.1)",
                   color: "white",
                   borderRadius:
@@ -83,6 +77,7 @@ export default function Home() {
                       : "16px 16px 16px 0",
                   boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.3)",
                   fontFamily: "'Cairo', sans-serif",
+                  margin: "5px",
                 }}
               >
                 <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
@@ -102,6 +97,16 @@ export default function Home() {
             sx={{
               bgcolor: "rgba(255,255,255,0.95)",
               borderRadius: "10px",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px",
+                "&.Mui-focused fieldset": {
+                  borderColor: "#00BCD4",
+                  boxShadow: "0 0 8px rgba(0,188,212,0.4)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0,0,0,0.1)",
+                },
+              },
               input: {
                 color: "black",
                 fontFamily: "'Cairo', sans-serif",

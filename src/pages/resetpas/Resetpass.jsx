@@ -57,7 +57,7 @@ export default function ResetPass() {
       setMessage("");
 
       const response = await axios.patch(
-        "https://askly.runasp.net/api/Accounts/ResetPassword",
+        "https://localhost:7017/api/Accounts/ResetPassword",
         {
           email: email,
           code: data.code,
