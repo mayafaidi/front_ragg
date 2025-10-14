@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
-import Footer from "../../component/footer/Footer";
+
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
@@ -16,9 +16,13 @@ export default function Home() {
     { sender: "user", text: "أريد معرفة كيفية استخدام React" },
     {
       sender: "bot",
-      text: "  سوالك جميل ازا عند ملاحظات احكي لمايا تعدل تمام تمام ",
+      text: "سؤالك جميل! إذا عندك ملاحظات احكي لمايا تعدل تمام تمام 😄",
     },
   ]);
+
+  const [open, setOpen] = useState(false);
+  const handleDrawerOpen = () => setOpen(true);
+  const handleDrawerClose = () => setOpen(false);
 
   const handleSend = () => {
     if (input.trim() === "") return;
@@ -28,19 +32,31 @@ export default function Home() {
 
   return (
     <>
-      <MenuAppBar />
+      <MenuAppBar
+        open={open}
+        handleDrawerOpen={handleDrawerOpen}
+        handleDrawerClose={handleDrawerClose}
+      />
+
       <Box
+        component="main"
         sx={{
-          bgcolor: "#0b162b",
           height: "100vh",
+          background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
           color: "white",
           display: "flex",
           flexDirection: "column",
           pt: 8,
           px: 3,
+          fontFamily: "'Cairo', sans-serif",
+          transition: (theme) =>
+            theme.transitions.create("margin", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+          marginRight: open ? "280px" : 0,
         }}
       >
-        {/* ✅ الرسائل */}
         <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
           {messages.map((msg, index) => (
             <Box
@@ -56,34 +72,40 @@ export default function Home() {
                 sx={{
                   p: 1.5,
                   maxWidth: "75%",
-                  bgcolor: msg.sender === "user" ? "#00bcd4" : "#1f2d52",
+                  bgcolor:
+                    msg.sender === "user"
+                      ? "rgba(0, 188, 212, 0.9)"
+                      : "rgba(255, 255, 255, 0.1)",
                   color: "white",
                   borderRadius:
                     msg.sender === "user"
                       ? "16px 16px 0 16px"
                       : "16px 16px 16px 0",
+                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.3)",
+                  fontFamily: "'Cairo', sans-serif",
                 }}
               >
-                <Typography>{msg.text}</Typography>
+                <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
               </Paper>
             </Box>
           ))}
         </Box>
 
-        {/* ✅ إدخال الرسالة */}
         <Box sx={{ display: "flex", gap: 1 }}>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="اكتب عزيزي الطالب"
-             dir="rtl"
+            placeholder="اكتب عزيزي الطالب..."
+            dir="rtl"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             sx={{
-              bgcolor: "#fff",
+              bgcolor: "rgba(255,255,255,0.95)",
               borderRadius: "10px",
-              
-              input: { color: "black" },
+              input: {
+                color: "black",
+                fontFamily: "'Cairo', sans-serif",
+              },
             }}
           />
           <IconButton
@@ -99,7 +121,6 @@ export default function Home() {
           </IconButton>
         </Box>
       </Box>
-{/* <Footer/> */}
     </>
   );
 }

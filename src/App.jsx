@@ -13,6 +13,14 @@ function App() {
     <Route
       path="/"
       element={
+        <ProtectedRouter>
+          <Home />
+        </ProtectedRouter>
+      }
+    />
+     <Route
+      path="/Login"
+      element={
         <PublicRoute>
           <Login />
         </PublicRoute>
