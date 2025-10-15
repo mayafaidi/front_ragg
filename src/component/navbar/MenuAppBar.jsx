@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 
@@ -25,12 +25,13 @@ import TextField from "@mui/material/TextField";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
 // Chat Context
 import { useChat } from "../../context/ChatContext";
-import { useEffect } from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+
 const drawerWidth = 280;
 
 const MyAppBar = styled(MuiAppBar, {
@@ -53,45 +54,62 @@ const MyAppBar = styled(MuiAppBar, {
 }));
 
 export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }) {
-  const [auth] = useState(true);//هون لتسجيل دخول تمام 
-  const { sessions, createSession, fetchAllSessions, deleteSession,renamesession } = useChat(); //  استخدام الـ Context
+  const [auth] = useState(true); // لتسجيل دخول
+  const { sessions, createSession, fetchAllSessions, deleteSession, renamesession, searchMessages,handleDownloadSession,getUserStats } = useChat();
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
-  const [specialty, setSpecialty] = useState("");//عشان تخصصي 
+  const [specialty, setSpecialty] = useState("");
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+const [userStats, setUserStats] = useState(null);//عشان اخزن رقم تاعت userstate
 
-  // هدول عشان صفحة تسجيل دخول
+  // Account menu
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
   const handleAccountClose = () => setAccountAnchorEl(null);
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
+
+  // Rename session
   const handleRenameSession = async (sessionId) => {
-  const newTitle = prompt("ادخل الاسم الجديد للجلسة:"); // يفتح مربع لإدخال الاسم
-  if (!newTitle) return;
+    const newTitle = prompt("ادخل الاسم الجديد للجلسة:");
+    if (!newTitle) return;
 
-  const updated = await renamesession(sessionId, newTitle); // ينادي الـ API
-  if (updated) {
-    console.log("تمت إعادة تسمية الجلسة:", updated);
-    fetchAllSessions(); // لتحديث قائمة الجلسات بعد التغيير
-  }
-};
+    const updated = await renamesession(sessionId, newTitle);
+    if (updated) {
+      fetchAllSessions();
+    }
+  };
 
-//استخدام عند ارسال رسائل 
+  // Specialty change
   const handleSpecialtyChange = (event) => {
     setSpecialty(event.target.value);
     localStorage.setItem("currentSpecialty", event.target.value);
   };
 useEffect(() => {
-  fetchAllSessions(); // جلب كل الجلسات من السيرفر عند التحميل
+  fetchAllSessions();
+  getUserStats().then((data) => {
+    if (data) setUserStats(data);
+  });
 }, []);
-  // دالة إنشاء محادثة جديدة
+
+  useEffect(() => {
+    fetchAllSessions();
+  }, []);
+
+  // Create new session
   const handleCreateSession = async () => {
-    const newSession = await createSession();
-    if (newSession) {
-      console.log("✅ Session created:", newSession);
-    }
+    await createSession();
+    fetchAllSessions();
   };
+
+  // Filter sessions based on search
+  const filteredSessions = searchQuery
+    ? sessions.filter((s, index) =>
+        (s.title || `محادثة ${index + 1}`).toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : sessions;
 
   return (
     <>
@@ -107,12 +125,7 @@ useEffect(() => {
                 mr: 2,
                 "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                 "& .MuiSelect-icon": { color: "#00bcd4", right: "auto", left: 8 },
-                "& .MuiSelect-select": {
-                  color: "white",
-                  textAlign: "right",
-                  fontWeight: 500,
-                  paddingRight: "8px",
-                },
+                "& .MuiSelect-select": { color: "white", textAlign: "right", fontWeight: 500, paddingRight: "8px" },
                 "&:hover": { backgroundColor: "rgba(0, 188, 212, 0.15)" },
               }}
             >
@@ -120,13 +133,9 @@ useEffect(() => {
                 value={specialty}
                 onChange={handleSpecialtyChange}
                 displayEmpty
-                MenuProps={{
-                  PaperProps: { sx: { direction: "rtl", bgcolor: "#0b162b", color: "white" } },
-                }}
+                MenuProps={{ PaperProps: { sx: { direction: "rtl", bgcolor: "#0b162b", color: "white" } } }}
               >
-                <MenuItem value="" disabled>
-                  🎓 اختر تخصصك
-                </MenuItem>
+                <MenuItem value="" disabled>🎓 اختر تخصصك</MenuItem>
                 <MenuItem value="General">عام</MenuItem>
                 <MenuItem value="CS">علم الحاسوب</MenuItem>
                 <MenuItem value="CSec">الأمن السيبراني</MenuItem>
@@ -149,22 +158,13 @@ useEffect(() => {
                   onClose={handleAccountClose}
                   PaperProps={{ sx: { bgcolor: "rgba(11,22,43)", color: "white" } }}
                 >
-                  <MenuItem
-                    onClick={() => {
-                      handleAccountClose();
-                      handleLogout();
-                    }}
-                  >
-                    تسجيل الخروج
-                  </MenuItem>
+                  <MenuItem onClick={() => { handleAccountClose(); handleLogout(); }}>تسجيل الخروج</MenuItem>
                 </Menu>
               </Box>
             )}
           </Box>
 
-          <Typography variant="h6" sx={{ textAlign: "right", flexGrow: 1, fontWeight: 700 }}>
-            Askly
-          </Typography>
+          <Typography variant="h6" sx={{ textAlign: "right", flexGrow: 1, fontWeight: 700 }}>Askly</Typography>
 
           <IconButton color="inherit" edge="end" onClick={handleDrawerOpen}>
             <MenuIcon />
@@ -175,31 +175,21 @@ useEffect(() => {
       <Drawer
         sx={{
           width: drawerWidth,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
-            color: "white",
-          },
+          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box", background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)", color: "white" },
         }}
         variant="persistent"
         anchor="right"
         open={open}
       >
         <Box sx={{ display: "flex", alignItems: "center", p: 1, borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronRightIcon sx={{ color: "white" }} />
-          </IconButton>
+          <IconButton onClick={handleDrawerClose}><ChevronRightIcon sx={{ color: "white" }} /></IconButton>
           <Typography sx={{ ml: 1 }}>المحادثات</Typography>
         </Box>
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
 
         <Box sx={{ display: "flex", alignItems: "center", p: 1.5, justifyContent: "center" }}>
-          <Button
-            sx={{ backgroundColor: "#00BCD4", color: "white", borderRadius: "8px", textTransform: "none", "&:hover": { backgroundColor: "#0097a7" } }}
-            onClick={handleCreateSession} //  الزر ينادي createSession من الـ Context
-          >
+          <Button sx={{ backgroundColor: "#00BCD4", color: "white", borderRadius: "8px", textTransform: "none", "&:hover": { backgroundColor: "#0097a7" } }} onClick={handleCreateSession}>
             إنشاء محادثة جديدة +
           </Button>
         </Box>
@@ -210,6 +200,7 @@ useEffect(() => {
             variant="outlined"
             placeholder="ابحث في المحادثات..."
             size="small"
+            value={searchQuery}
             dir="rtl"
             sx={{
               bgcolor: "rgba(255,255,255,0.1)",
@@ -218,78 +209,94 @@ useEffect(() => {
               "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.2)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#00bcd4" },
             }}
+            onChange={async (e) => {
+              const query = e.target.value;
+              setSearchQuery(query);
+              if (!query.trim()) {
+                setSearchResults([]);
+                return;
+              }
+              const results = await searchMessages(query);
+              setSearchResults(results);
+            }}
           />
+          {userStats && (
+  <Box sx={{ textAlign: "center", color: "white", mt: 1.5, mb: 1 }}>
+    <Typography variant="body2">
+      🗂️ عدد المحادثات: {userStats.totalSessions || 0}
+    </Typography>
+    <Typography variant="body2">
+       اخر ظهور: {userStats.lastActivity || 0}
+    </Typography>
+  </Box>
+)}
+
         </Box>
 
+        {searchResults.length > 0 && (
+          <List sx={{ maxHeight: 200, overflow: "auto", mt: 1 }}>
+            {searchResults.map((msg) => (
+              <ListItem key={msg.id} divider>
+                <ListItemText
+                  primary={msg.content}
+                  secondary={`في الجلسة: ${msg.sessionTitle || msg.sessionId}`}
+                  primaryTypographyProps={{ color: "#fff" }}
+                  secondaryTypographyProps={{ color: "#aaa" }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+
         <List>
-  {(() => {
-    const currentSessionId = Number(localStorage.getItem("currentSessionId"));
-
-    return sessions.map((session, index) => (
-      <ListItem
-        key={session.id}
-        selected={session.id === currentSessionId}
-        divider
-        sx={{
-          direction: "rtl",
-          justifyContent: "space-between", // نعدل لوجود زر الحذف
-          textAlign: "right",
-          "&:hover": { cursor: "pointer", backgroundColor: "rgba(0,188,212,0.2)" },
-        }}
-      >
-        <ListItemText
-          // primary={`محادثة ${index + 1}`}
-          // secondary={session.title || "محادثة جديدة"}
-           primary={session.title || `محادثة ${index + 1}`}//
-  secondary={null} // تحذف النص القديم
-          primaryTypographyProps={{ color: "#fff" }}
-          secondaryTypographyProps={{ color: "#aaa" }}
-          onClick={() => {
-            localStorage.setItem("currentSessionId", session.id);
-            window.dispatchEvent(new Event("sessionSelected"));
-            handleDrawerClose();
-          }}
-        />
-{/* تسمية  */}
-
-<IconButton
-  edge="end"
-  sx={{ color: "#FFD700", mr: 1 }}
-  onClick={(e) => {
-    e.stopPropagation(); // مهم حتى لا يفتح الجلسة عند الضغط على Edit
-    handleRenameSession(session.id);
-  }}
->
-  <EditIcon />
+          {filteredSessions.map((session, index) => {
+            const currentSessionId = Number(localStorage.getItem("currentSessionId"));
+            return (
+              <ListItem
+                key={session.id}
+                selected={session.id === currentSessionId}
+                divider
+                sx={{ direction: "rtl", justifyContent: "space-between", textAlign: "right", "&:hover": { cursor: "pointer", backgroundColor: "rgba(0,188,212,0.2)" } }}
+              >
+                <ListItemText
+                  primary={session.title || `محادثة ${index + 1}`}
+                  secondary={null}
+                  primaryTypographyProps={{ color: "#fff" }}
+                  secondaryTypographyProps={{ color: "#aaa" }}
+                  onClick={() => {
+                    localStorage.setItem("currentSessionId", session.id);
+                    window.dispatchEvent(new Event("sessionSelected"));
+                    handleDrawerClose();
+                  }}
+                />
+             
+<IconButton onClick={() => handleDownloadSession(session.id)} title="تحميل PDF">
+  <FileDownloadIcon />
 </IconButton>
-
-
-
-
-
-
-
-
-
-        {/* //حذف */}
-        <IconButton
-          edge="end"
-          sx={{ color: "#ff5252" }}
-          onClick={async (e) => {
-            e.stopPropagation(); // مهم حتى لا يفتح الجلسة عند الضغط على الحذف
-            if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
-              await deleteSession(session.id); // دالة حذف من ChatContext
-              fetchAllSessions(); // تحديث قائمة الجلسات
-            }
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </ListItem>
-    ));
-  })()}
-</List>
-
+                <IconButton
+                  edge="end"
+                  sx={{ color: "#FFD700", mr: 1 }}
+                  onClick={(e) => { e.stopPropagation(); handleRenameSession(session.id); }}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  edge="end"
+                  sx={{ color: "#ff5252" }}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
+                      await deleteSession(session.id);
+                      fetchAllSessions();
+                    }
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </ListItem>
+            );
+          })}
+        </List>
       </Drawer>
     </>
   );

@@ -111,13 +111,66 @@ catch(err){
 
 
 }
+const searchMessages = async (query) => {
+  const token = localStorage.getItem("token");
+  if (!token) return [];
 
+  try {
+    const response = await axios.get(
+      `https://localhost:7017/api/Chats/messages/search`,
+      {
+        params: { query },
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return response.data?.data || [];
+  } catch (err) {
+    console.error("فشل البحث في الرسائل:", err);
+    return [];
+  }
+};
+
+const handleDownloadSession = async (id) => {
+  try {
+    // const token = localStorage.getItem("token"); // لازم يكون موجود
+    const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(response.data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `session_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error("خطأ أثناء تحميل الجلسة:", error);
+  }
+};
+
+
+
+const getUserStats = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get("https://localhost:7017/api/Chats/user-stats", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("📊 User stats:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ فشل جلب الإحصائيات:", error);
+    return null;
+  }
+};
 
 
 
 
   return (
-    <ChatContext.Provider value={{ sessions, createSession, fetchAllSessions, deleteSession ,renamesession     }}>
+    <ChatContext.Provider value={{ sessions, createSession, fetchAllSessions, deleteSession ,renamesession , searchMessages ,handleDownloadSession,getUserStats,   }}>
       {children}
     </ChatContext.Provider>
   );
