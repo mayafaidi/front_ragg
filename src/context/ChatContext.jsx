@@ -131,23 +131,22 @@ const searchMessages = async (query) => {
 };
 
 const handleDownloadSession = async (id) => {
+  const token = localStorage.getItem("token"); // لازم يكون موجود
   try {
-    // const token = localStorage.getItem("token"); // لازم يكون موجود
-    const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: "blob",
-    });
-
-    const url = window.URL.createObjectURL(response.data);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `session_${id}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } catch (error) {
-    console.error("خطأ أثناء تحميل الجلسة:", error);
-  }
+      const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `session_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("خطأ أثناء تحميل الجلسة:", error);
+    }
 };
 
 
