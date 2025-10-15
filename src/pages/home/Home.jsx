@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Box, IconButton, TextField, Typography, Paper } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
+import { useEffect } from "react";
+import axios from "axios";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -18,12 +20,101 @@ export default function Home() {
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  const handleSend = () => {
-    if (input.trim() === "") return;
-    setMessages([...messages, { sender: "user", text: input }]);
-    setInput("");
+  // const handleSend = () => {
+  //   if (input.trim() === "") return;
+  //   setMessages([...messages, { sender: "user", text: input }]);
+  //   setInput("");
+  // };
+useEffect(() => {
+  const handleSessionSelected = () => {
+    const selectedId = localStorage.getItem("currentSessionId");
+    if (selectedId) {
+      console.log("📥 تحميل محادثة ID =", selectedId);
+      fetchMessages(selectedId);
+    }
   };
 
+  window.addEventListener("sessionSelected", handleSessionSelected);
+  return () => window.removeEventListener("sessionSelected", handleSessionSelected);
+}, []);
+const fetchMessages = async (sessionId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await axios.get(
+        `https://localhost:7017/api/Chats/sessions/${sessionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // السيرفر ممكن يرجع قائمة رسائل داخل data
+const msgs = response.data?.data?.messages?.map(m => ({
+  sender: m.role === "user" ? "user" : "bot",
+  text: m.content
+})) || [];
+      console.log("📩 الرسائل:", msgs);
+      setMessages(msgs);
+    } catch (error) {
+      console.error("❌ فشل في جلب الرسائل:", error);
+      setMessages([
+        { sender: "bot", text: "لا توجد رسائل بعد، ابدأ المحادثة 👋" },
+      ]);
+    }
+  };
+   // 👇 إرسال رسالة جديدة
+  const handleSend = async () => {
+    if (input.trim() === "") return;
+
+    const token = localStorage.getItem("token");
+    const sessionId = localStorage.getItem("currentSessionId");
+    const major = localStorage.getItem("currentSpecialty") || "General";
+
+    if (!token || !sessionId) {
+      console.error("❌ لا يوجد جلسة أو توكن");
+      return;
+    }
+
+    const userMsg = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+
+    try {
+      console.log({
+  sessionId: Number(sessionId),
+  role: "user",
+  content: input,
+  major: major,
+});
+      const response = await axios.post(
+        "https://localhost:7017/api/Chats/send-message",
+        {
+          sessionId: Number(sessionId),
+          role: "user",
+          content: input,
+          major: major,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const botMsg = response.data?.data;
+      if (botMsg && botMsg.content) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: botMsg.content },
+        ]);
+      }
+    } catch (error) {
+      console.error("❌ فشل إرسال الرسالة:", error);
+    }
+  };
   return (
     <>
       <MenuAppBar

@@ -6,8 +6,10 @@ import ResetPass from "./pages/resetpas/Resetpass";
 import Home from "./pages/home/Home";
 import ProtectedRouter from "../ProtectedRouter";
 import PublicRoute from "../PublicRouter";
+import { ChatProvider } from "./context/ChatContext";
 function App() {
   return (
+    <ChatProvider>
    <Router>
   <Routes>
     <Route
@@ -60,6 +62,7 @@ function App() {
     />
   </Routes>
 </Router>
+</ChatProvider>
   );
 }
 
