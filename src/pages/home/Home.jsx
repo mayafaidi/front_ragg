@@ -1,71 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, IconButton, TextField, Typography, Paper } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
-import { useEffect } from "react";
 import axios from "axios";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useChat } from "../../context/ChatContext";
 
 export default function Home() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([
-    { sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" },
-    { sender: "user", text: "أريد معرفة كيفية استخدام React" },
-    {
-      sender: "bot",
-      text: "سؤالك جميل! إذا عندك ملاحظات احكي لمايا تعدل تمام تمام 😄",
-    },
-  ]);
-
+  const [messages, setMessages] = useState([]);
+  const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  // const handleSend = () => {
-  //   if (input.trim() === "") return;
-  //   setMessages([...messages, { sender: "user", text: input }]);
-  //   setInput("");
-  // };
-useEffect(() => {
-  const handleSessionSelected = () => {
-    const selectedId = localStorage.getItem("currentSessionId");
-    if (selectedId) {
-      console.log("📥 تحميل محادثة ID =", selectedId);
-      fetchMessages(selectedId);
-    }
-  };
+  const { sessions, fetchAllSessions, createSession, searchMessages } = useChat();
 
-  window.addEventListener("sessionSelected", handleSessionSelected);
-  return () => window.removeEventListener("sessionSelected", handleSessionSelected);
-}, []);
-const fetchMessages = async (sessionId) => {
+  // تحميل الرسائل للجلسة الحالية
+  useEffect(() => {
+    const loadCurrentSession = async () => {
+      const selectedId = localStorage.getItem("currentSessionId");
+      if (selectedId) {
+        setLoading(true);
+        await fetchMessages(selectedId);
+        setLoading(false);
+      }
+    };
+
+    loadCurrentSession();
+
+    const handleSessionSelected = async () => {
+      const selectedId = localStorage.getItem("currentSessionId");
+      if (selectedId) {
+        setLoading(true);
+        await fetchMessages(selectedId);
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener("sessionSelected", handleSessionSelected);
+    return () => window.removeEventListener("sessionSelected", handleSessionSelected);
+  }, []);
+
+  const fetchMessages = async (sessionId) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
       const response = await axios.get(
         `https://localhost:7017/api/Chats/sessions/${sessionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // السيرفر ممكن يرجع قائمة رسائل داخل data
-const msgs = response.data?.data?.messages?.map(m => ({
-  sender: m.role === "user" ? "user" : "bot",
-  text: m.content
-})) || [];
-      console.log("📩 الرسائل:", msgs);
+      const msgs = response.data?.data?.messages?.map((m) => ({
+        sender: m.role === "user" ? "user" : "bot",
+        text: m.content,
+      })) || [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
+
       setMessages(msgs);
     } catch (error) {
-      console.error("❌ فشل في جلب الرسائل:", error);
-      setMessages([
-        { sender: "bot", text: "لا توجد رسائل بعد، ابدأ المحادثة 👋" },
-      ]);
+      console.error("فشل في جلب الرسائل:", error);
+      setMessages([{ sender: "bot", text: "لا توجد رسائل بعد، ابدأ المحادثة" }]);
     }
   };
-   // 👇 إرسال رسالة جديدة
+
+  // إنشاء جلسة جديدة مع رسالة ترحيبية مباشرة
+  const handleCreateSession = async () => {
+    const newSession = await createSession();
+    if (newSession) {
+      const msgs = newSession.messages && newSession.messages.length > 0
+        ? newSession.messages.map((m) => ({
+            sender: m.role === "user" ? "user" : "bot",
+            text: m.content,
+          }))
+        : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
+
+      setMessages(msgs); // عرض الرسائل فورًا
+      fetchAllSessions(); // تحديث قائمة الجلسات
+    }
+  };
+
+  // إرسال رسالة جديدة
   const handleSend = async () => {
     if (input.trim() === "") return;
 
@@ -73,48 +90,31 @@ const msgs = response.data?.data?.messages?.map(m => ({
     const sessionId = localStorage.getItem("currentSessionId");
     const major = localStorage.getItem("currentSpecialty") || "General";
 
-    if (!token || !sessionId) {
-      console.error("❌ لا يوجد جلسة أو توكن");
-      return;
-    }
+    if (!token || !sessionId) return;
 
     const userMsg = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true);
 
     try {
-      console.log({
-  sessionId: Number(sessionId),
-  role: "user",
-  content: input,
-  major: major,
-});
       const response = await axios.post(
         "https://localhost:7017/api/Chats/send-message",
-        {
-          sessionId: Number(sessionId),
-          role: "user",
-          content: input,
-          major: major,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+        { sessionId: Number(sessionId), role: "user", content: input, major },
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
+
       const botMsg = response.data?.data;
       if (botMsg && botMsg.content) {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "bot", text: botMsg.content },
-        ]);
+        setMessages((prev) => [...prev, { sender: "bot", text: botMsg.content }]);
       }
     } catch (error) {
-      console.error("❌ فشل إرسال الرسالة:", error);
+      console.error("فشل إرسال الرسالة:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <>
       <MenuAppBar
@@ -143,38 +143,41 @@ const msgs = response.data?.data?.messages?.map(m => ({
         }}
       >
         <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
-          {messages.map((msg, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: "flex",
-                justifyContent:
-                  msg.sender === "user" ? "flex-end" : "flex-start",
-                mb: 1.5,
-              }}
-            >
-              <Paper
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+              <CircularProgress sx={{ color: "white" }} />
+            </Box>
+          ) : messages.length === 0 ? (
+            <Typography sx={{ textAlign: "center", mt: 4 }}>
+              مرحبا بك ! كيف يمكنني مساعدتك 
+            </Typography>
+          ) : (
+            messages.map((msg, index) => (
+              <Box
+                key={index}
                 sx={{
-                  p: 1.5,
-                  maxWidth: "75%",
-                  bgcolor:
-                    msg.sender === "user"
-                      ? "rgba(0,188,212,0.1)" // أزرق شفاف بدل الفيروزي الصارخ
-                      : "rgba(255, 255, 255, 0.1)",
-                  color: "white",
-                  borderRadius:
-                    msg.sender === "user"
-                      ? "16px 16px 0 16px"
-                      : "16px 16px 16px 0",
-                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.3)",
-                  fontFamily: "'Cairo', sans-serif",
-                  margin: "5px",
+                  display: "flex",
+                  justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+                  mb: 1.5,
                 }}
               >
-                <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
-              </Paper>
-            </Box>
-          ))}
+                <Paper
+                  sx={{
+                    p: 1.5,
+                    maxWidth: "75%",
+                    bgcolor: msg.sender === "user" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.1)",
+                    color: "white",
+                    borderRadius: msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
+                    boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.3)",
+                    fontFamily: "'Cairo', sans-serif",
+                    margin: "5px",
+                  }}
+                >
+                  <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
+                </Paper>
+              </Box>
+            ))
+          )}
         </Box>
 
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -194,26 +197,16 @@ const msgs = response.data?.data?.messages?.map(m => ({
                   borderColor: "#00BCD4",
                   boxShadow: "0 0 8px rgba(0,188,212,0.4)",
                 },
-                "&:hover fieldset": {
-                  borderColor: "rgba(0,0,0,0.1)",
-                },
+                "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
               },
-              input: {
-                color: "black",
-                fontFamily: "'Cairo', sans-serif",
-              },
+              input: { color: "black", fontFamily: "'Cairo', sans-serif" },
             }}
           />
           <IconButton
             onClick={handleSend}
-            sx={{
-              bgcolor: "#00bcd4",
-              color: "white",
-              borderRadius: "10px",
-              "&:hover": { bgcolor: "#0097a7" },
-            }}
+            sx={{ bgcolor: "#00bcd4", color: "white", borderRadius: "10px", "&:hover": { bgcolor: "#0097a7" } }}
           >
-            <SendIcon />
+            {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
           </IconButton>
         </Box>
       </Box>

@@ -2,8 +2,8 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
+import axios from "axios";
 
-// MUI Components
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -21,7 +21,6 @@ import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
-// MUI Icons
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -29,7 +28,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
-// Chat Context
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+
 import { useChat } from "../../context/ChatContext";
 
 const drawerWidth = 280;
@@ -54,57 +57,104 @@ const MyAppBar = styled(MuiAppBar, {
 }));
 
 export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }) {
-  const [auth] = useState(true); // لتسجيل دخول
-  const { sessions, createSession, fetchAllSessions, deleteSession, renamesession, searchMessages,handleDownloadSession,getUserStats } = useChat();
+  const [auth] = useState(true);
+  const { sessions, createSession, fetchAllSessions, deleteSession, renamesession, searchMessages, handleDownloadSession, getUserStats } = useChat();
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
-  const [specialty, setSpecialty] = useState("");
+  const [specialty, setSpecialty] = useState(localStorage.getItem("currentSpecialty") || "");
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-const [userStats, setUserStats] = useState(null);//عشان اخزن رقم تاعت userstate
+  const [userStats, setUserStats] = useState(null);
+  const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
 
-  // Account menu
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  // Account Menu handlers
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
   const handleAccountClose = () => setAccountAnchorEl(null);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // Rename session
-  const handleRenameSession = async (sessionId) => {
-    const newTitle = prompt("ادخل الاسم الجديد للجلسة:");
-    if (!newTitle) return;
-
-    const updated = await renamesession(sessionId, newTitle);
-    if (updated) {
-      fetchAllSessions();
-    }
+  // Open password dialog
+  const handleOpenPasswordDialog = () => {
+    handleAccountClose(); // يغلق القائمة أولاً
+    setOpenPasswordDialog(true);
   };
+  const handleClosePasswordDialog = () => setOpenPasswordDialog(false);
 
-  // Specialty change
   const handleSpecialtyChange = (event) => {
     setSpecialty(event.target.value);
     localStorage.setItem("currentSpecialty", event.target.value);
   };
-useEffect(() => {
-  fetchAllSessions();
-  getUserStats().then((data) => {
-    if (data) setUserStats(data);
-  });
-}, []);
 
-  useEffect(() => {
-    fetchAllSessions();
-  }, []);
-
-  // Create new session
   const handleCreateSession = async () => {
     await createSession();
     fetchAllSessions();
   };
 
-  // Filter sessions based on search
+  const handleRenameSession = async (sessionId) => {
+    const newTitle = prompt("ادخل الاسم الجديد :");
+    if (!newTitle) return;
+    const updated = await renamesession(sessionId, newTitle);
+    if (updated) fetchAllSessions();
+  };
+
+  const handleChangePassword = async () => {
+  if (!currentPassword || !newPassword) {
+    alert("يرجى إدخال كلمتي المرور");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  setChangingPassword(true);
+  try {
+    console.log("Sending password change request:", { currentPassword, newPassword });
+
+    const response = await axios.patch(
+      "https://localhost:7017/api/Accounts/ChangePassword",
+      {
+        currentPassword: currentPassword.trim(),
+        newPassword: newPassword.trim()
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("Response:", response.data);
+    alert("تم تغيير كلمة المرور بنجاح");
+    setCurrentPassword("");
+    setNewPassword("");
+  } catch (error) {
+    console.error("فشل تغيير كلمة المرور:", error);
+    alert(error.response?.data?.message || "فشل تغيير كلمة المرور");
+  } finally {
+    setChangingPassword(false);
+  }
+};
+
+
+  useEffect(() => {
+    const updateData = async () => {
+      await fetchAllSessions();
+      const stats = await getUserStats();
+      if (stats) setUserStats(stats);
+    };
+    updateData();
+    window.addEventListener("sessionsUpdated", updateData);
+    return () => window.removeEventListener("sessionsUpdated", updateData);
+  }, []);
+
   const filteredSessions = searchQuery
     ? sessions.filter((s, index) =>
         (s.title || `محادثة ${index + 1}`).toLowerCase().includes(searchQuery.toLowerCase())
@@ -158,7 +208,8 @@ useEffect(() => {
                   onClose={handleAccountClose}
                   PaperProps={{ sx: { bgcolor: "rgba(11,22,43)", color: "white" } }}
                 >
-                  <MenuItem onClick={() => { handleAccountClose(); handleLogout(); }}>تسجيل الخروج</MenuItem>
+                  <MenuItem onClick={handleOpenPasswordDialog}>تغيير كلمة المرور</MenuItem>
+                  <MenuItem onClick={handleLogout}>تسجيل الخروج</MenuItem>
                 </Menu>
               </Box>
             )}
@@ -172,6 +223,39 @@ useEffect(() => {
         </Toolbar>
       </MyAppBar>
 
+      {/* Password Dialog */}
+      <Dialog open={openPasswordDialog} onClose={handleClosePasswordDialog}>
+        <DialogTitle>تغيير كلمة المرور</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, width: 400 }}>
+          <TextField
+            label="كلمة المرور الحالية"
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <TextField
+            label="كلمة المرور الجديدة"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleClosePasswordDialog}>إلغاء</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              await handleChangePassword();
+              handleClosePasswordDialog();
+            }}
+            disabled={changingPassword}
+          >
+            {changingPassword ? "جاري التغيير..." : "تغيير"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Drawer for sessions */}
       <Drawer
         sx={{
           width: drawerWidth,
@@ -221,16 +305,12 @@ useEffect(() => {
             }}
           />
           {userStats && (
-  <Box sx={{ textAlign: "center", color: "white", mt: 1.5, mb: 1 }}>
-    <Typography variant="body2">
-      🗂️ عدد المحادثات: {userStats.totalSessions || 0}
-    </Typography>
-    <Typography variant="body2">
-       اخر ظهور: {userStats.lastActivity || 0}
-    </Typography>
-  </Box>
-)}
-
+            <Box sx={{ textAlign: "center", color: "white", mt: 1.5, mb: 1 }}>
+              <Typography variant="body2">🗂️ عدد المحادثات: {userStats.totalSessions || 0}</Typography>
+              <Typography variant="body2">اخر ظهور: {userStats.lastActivity || 0}</Typography>
+              <Typography variant="body2">totalMessages: {userStats.totalMessages || 0}</Typography>
+            </Box>
+          )}
         </Box>
 
         {searchResults.length > 0 && (
@@ -269,28 +349,19 @@ useEffect(() => {
                     handleDrawerClose();
                   }}
                 />
-             
-<IconButton onClick={() => handleDownloadSession(session.id)} title="تحميل PDF">
-  <FileDownloadIcon />
-</IconButton>
-                <IconButton
-                  edge="end"
-                  sx={{ color: "#FFD700", mr: 1 }}
-                  onClick={(e) => { e.stopPropagation(); handleRenameSession(session.id); }}
-                >
+                <IconButton onClick={() => handleDownloadSession(session.id)} title="تحميل PDF">
+                  <FileDownloadIcon />
+                </IconButton>
+                <IconButton edge="end" sx={{ color: "#FFD700", mr: 1 }} onClick={(e) => { e.stopPropagation(); handleRenameSession(session.id); }}>
                   <EditIcon />
                 </IconButton>
-                <IconButton
-                  edge="end"
-                  sx={{ color: "#ff5252" }}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
-                      await deleteSession(session.id);
-                      fetchAllSessions();
-                    }
-                  }}
-                >
+                <IconButton edge="end" sx={{ color: "#ff5252" }} onClick={async (e) => {
+                  e.stopPropagation();
+                  if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
+                    await deleteSession(session.id);
+                    fetchAllSessions();
+                  }
+                }}>
                   <DeleteIcon />
                 </IconButton>
               </ListItem>

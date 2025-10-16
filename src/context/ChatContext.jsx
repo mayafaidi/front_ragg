@@ -17,9 +17,20 @@ export const ChatProvider = ({ children }) => {
         { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
       const newSession = response.data.data;
+      newSession.messages = [
+  { role: "bot", content: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }
+];
       localStorage.setItem("currentSessionId", newSession.id);
       setSessions((prev) => [...prev, newSession]);
-      window.dispatchEvent(new Event("sessionCreated"));
+
+       //هدول التنين لما يكبس انشاء دغري بروح على القجديدة
+    window.dispatchEvent(new Event("sessionsUpdated"));
+ const welcomeMessage = {
+      sender: "bot",
+      text: "مرحباً! كيف يمكنني مساعدتك اليوم؟"
+    };
+   
+    window.dispatchEvent(new Event("sessionSelected"));
       return newSession;
     } catch (err) {
       console.error("Failed to create session", err);
@@ -41,6 +52,8 @@ const response =await axios.get("https://localhost:7017/api/Chats/sessions",
 
   const allSessions = response.data?.data || [];
     setSessions(allSessions);
+    window.dispatchEvent(new Event("sessionsUpdated"));
+
     return allSessions;
 
 }
@@ -75,7 +88,7 @@ const deleteSession = async (sessionId) => {
       localStorage.removeItem("currentSessionId");
       window.dispatchEvent(new Event("sessionDeleted"));
     }
-
+ window.dispatchEvent(new Event("sessionsUpdated"));
     console.log(`✅ تم حذف الجلسة رقم ${sessionId}`);
   } catch (error) {
     console.error("❌ فشل حذف الجلسة:", error);
@@ -95,7 +108,7 @@ const response = await axios.put(`https://localhost:7017/api/Chats/sessions/${se
 
    const updatedSession = response.data;
    console.log(response.data);
-
+ window.dispatchEvent(new Event("sessionsUpdated"));
     console.log(" Session renamed:", updatedSession);
     return updatedSession;
 
@@ -131,12 +144,14 @@ const searchMessages = async (query) => {
 };
 
 const handleDownloadSession = async (id) => {
+  console.log(id);
   const token = localStorage.getItem("token"); // لازم يكون موجود
   try {
       const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
       });
+      
       const url = window.URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
@@ -157,10 +172,10 @@ const getUserStats = async () => {
     const response = await axios.get("https://localhost:7017/api/Chats/user-stats", {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log("📊 User stats:", response.data);
+    
     return response.data;
   } catch (error) {
-    console.error("❌ فشل جلب الإحصائيات:", error);
+    console.error(" فشل جلب الإحصائيات:", error);
     return null;
   }
 };
