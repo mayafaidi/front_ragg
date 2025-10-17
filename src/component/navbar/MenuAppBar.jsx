@@ -189,7 +189,7 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
               size="small"
               sx={{
                 minWidth: 170,
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                backgroundColor: "rgba(82, 90, 118, 0.9)",
                 borderRadius: "12px",
                 mr: 2,
                 "& .MuiOutlinedInput-notchedOutline": { border: "none" },
