@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
 import { useChat } from "../../context/ChatContext";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Footer from "../../component/footer/Footer";
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -114,20 +114,21 @@ export default function Home() {
     <>
       <MenuAppBar open={open} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
 
-      <Box
-        component="main"
-        sx={{
-          height: "100vh",
-          background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
-          color: "white",
-          display: "flex",
-          flexDirection: "column",
-          pt: 8,
-          px: 3,
-          fontFamily: "'Cairo', sans-serif",
-          marginRight: open ? "280px" : 0,
-        }}
-      >
+     <Box
+  component="main"
+  sx={{
+    minHeight: "100vh",
+    pb: 6, 
+    background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
+    color: "white",
+    display: "flex",
+    flexDirection: "column",
+    pt: 8,
+    px: 3,
+    fontFamily: "'Cairo', sans-serif",
+    marginRight: open ? "280px" : 0,
+  }}
+>
         <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
@@ -188,7 +189,9 @@ export default function Home() {
             {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
           </IconButton>
         </Box>
+
       </Box>
+      <Footer/>
     </>
   );
 }
