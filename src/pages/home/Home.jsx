@@ -113,12 +113,10 @@ export default function Home() {
   return (
     <>
       <MenuAppBar open={open} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
-
-     <Box
+<Box
   component="main"
   sx={{
     minHeight: "100vh",
-    pb: 6, 
     background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
     color: "white",
     display: "flex",
@@ -129,69 +127,72 @@ export default function Home() {
     marginRight: open ? "280px" : 0,
   }}
 >
-        <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
-          {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-              <CircularProgress sx={{ color: "white" }} />
-            </Box>
-          ) : messages.length === 0 ? (
-            <Typography sx={{ textAlign: "center", mt: 4 }}>مرحبا بك ! كيف يمكنني مساعدتك</Typography>
-          ) : (
-            messages.map((msg, index) => (
-              <Box
-                key={index}
-                sx={{
-                  display: "flex",
-                  justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
-                  mb: 1.5,
-                }}
-              >
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    maxWidth: "75%",
-                    bgcolor: msg.sender === "user" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.1)",
-                    color: "white",
-                    borderRadius: msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
-                    margin: "5px",
-                  }}
-                >
-                  <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
-                </Paper>
-              </Box>
-            ))
-          )}
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="اكتب عزيزي الطالب..."
-            dir="rtl"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            sx={{
-              bgcolor: "rgba(255,255,255,0.95)",
-              borderRadius: "10px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "10px",
-                "&.Mui-focused fieldset": { borderColor: "#00BCD4", boxShadow: "0 0 8px rgba(0,188,212,0.4)" },
-                "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
-              },
-              input: { color: "black", fontFamily: "'Cairo', sans-serif" },
-            }}
-          />
-          <IconButton
-            onClick={handleSend}
-            sx={{ bgcolor: "#00bcd4", color: "white", borderRadius: "10px", "&:hover": { bgcolor: "#0097a7" } }}
-          >
-            {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
-          </IconButton>
-        </Box>
-
+  <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}> 
+    {loading ? (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress sx={{ color: "white" }} />
       </Box>
-      <Footer/>
+    ) : messages.length === 0 ? (
+      <Typography sx={{ textAlign: "center", mt: 4 }}>مرحبا بك ! كيف يمكنني مساعدتك</Typography>
+    ) : (
+      messages.map((msg, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: "flex",
+            justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+            mb: 1.5,
+          }}
+        >
+          <Paper
+            sx={{
+              p: 1.5,
+              maxWidth: "75%",
+              bgcolor: msg.sender === "user" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.1)",
+              color: "white",
+              borderRadius: msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
+              margin: "5px",
+            }}
+          >
+            <Typography sx={{ fontSize: "16px" }}>{msg.text}</Typography>
+          </Paper>
+        </Box>
+      ))
+    )}
+  </Box>
+
+  <Box sx={{ position: "sticky", bottom: 0, zIndex: 100, bgcolor: "transparent" }}>
+    <Box sx={{ display: "flex", gap: 1, px: 1, pb: 0.5 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="اكتب عزيزي الطالب..."
+        dir="rtl"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        sx={{
+          bgcolor: "rgba(255,255,255,0.95)",
+          borderRadius: "10px",
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "10px",
+            "&.Mui-focused fieldset": { borderColor: "#00BCD4", boxShadow: "0 0 8px rgba(0,188,212,0.4)" },
+            "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
+          },
+          input: { color: "black", fontFamily: "'Cairo', sans-serif" },
+        }}
+      />
+      <IconButton
+        onClick={handleSend}
+        sx={{ bgcolor: "#00bcd4", color: "white", borderRadius: "10px", "&:hover": { bgcolor: "#0097a7" } }}
+      >
+        {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
+      </IconButton>
+    </Box>
+
+    <Footer />
+  </Box>
+</Box>
+
     </>
   );
 }
