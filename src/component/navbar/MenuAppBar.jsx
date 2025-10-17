@@ -215,7 +215,20 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
             )}
           </Box>
 
-          <Typography variant="h6" sx={{ textAlign: "right", flexGrow: 1, fontWeight: 700 }}>Askly</Typography>
+          <Typography
+          component="h1"
+          variant="h5"
+          sx={{
+            textAlign:"right",
+            flexGrow:1,
+            fontWeight: 700,
+            color: "white",
+            "&::first-letter": { color: "red" },
+            fontFamily: "Cairo, Poppins, sans-serif",
+          }}
+        >
+          Askly
+        </Typography>
 
           <IconButton color="inherit" edge="end" onClick={handleDrawerOpen}>
             <MenuIcon />
@@ -305,12 +318,32 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
             }}
           />
           {userStats && (
-            <Box sx={{ textAlign: "center", color: "white", mt: 1.5, mb: 1 }}>
-              <Typography variant="body2">🗂️ عدد المحادثات: {userStats.totalSessions || 0}</Typography>
-              <Typography variant="body2">اخر ظهور: {userStats.lastActivity || 0}</Typography>
-              <Typography variant="body2">totalMessages: {userStats.totalMessages || 0}</Typography>
-            </Box>
-          )}
+  <Box
+    sx={{
+      textAlign: "center",
+      p: 2,
+      borderTop: "1px solid rgba(255,255,255,0.2)",
+      mt: 2,
+      background: "rgba(255,255,255,0.05)",
+      borderRadius: 1,
+    }}
+  >
+    <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+      عدد المحادثات: {userStats.totalSessions || 0}
+    </Typography>
+
+    <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+      إجمالي الرسائل: {userStats.totalMessages || 0}
+    </Typography>
+
+    <Typography variant="body2" sx={{ color: "white" }}>
+      اخر ظهور: {userStats.lastActivity
+        ? `${new Date(userStats.lastActivity).toLocaleDateString("ar-EG")}-${new Date(userStats.lastActivity).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}`
+        : "غير متاح"}
+    </Typography>
+  </Box>
+)}
+
         </Box>
 
         {searchResults.length > 0 && (
