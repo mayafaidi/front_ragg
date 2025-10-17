@@ -86,7 +86,7 @@ export default function Home() {
 
     setMessages((prev) => [...prev, userMsg, typingMsg]);
 
-   
+   console.log("maya ");
     setInput("");
     setSending(true);
 
