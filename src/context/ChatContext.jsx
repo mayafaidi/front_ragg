@@ -82,23 +82,21 @@ const deleteSession = async (sessionId) => {
 
     const current = localStorage.getItem("currentSessionId");
     if (Number(current) === sessionId) {
-      localStorage.removeItem("currentSessionId");
-
-      
-      const newSession = await createSession(); 
+      // إنشاء جلسة جديدة مباشرة
+      const newSession = await createSession();
       if (newSession) {
         localStorage.setItem("currentSessionId", newSession.id);
+        window.dispatchEvent(new Event("sessionSelected")); // تحديث الرسائل للجلسة الجديدة
       }
-
-      window.dispatchEvent(new Event("sessionDeleted"));
     }
 
     window.dispatchEvent(new Event("sessionsUpdated"));
-    console.log(` تم حذف الجلسة رقم ${sessionId}`);
+    console.log(`تم حذف الجلسة رقم ${sessionId}`);
   } catch (error) {
-    console.error(" فشل حذف الجلسة:", error);
+    console.error("فشل حذف الجلسة:", error);
   }
 };
+
 
 
 

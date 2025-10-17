@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Box, IconButton, TextField, Typography, Paper } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
-import axios from "axios";
-import CircularProgress from "@mui/material/CircularProgress";
 import { useChat } from "../../context/ChatContext";
-import { useLocation } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -17,92 +15,51 @@ export default function Home() {
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  const location = useLocation();
-  const { sessions, fetchAllSessions, createSession, searchMessages } = useChat();
-
-  
- // عند تحميل الصفحة
-useEffect(() => {
-  const loadCurrentSession = async () => {
-    let selectedId = localStorage.getItem("currentSessionId");
-
-    if (!selectedId) {
-     
-      const newSession = await createSession();
-      if (newSession) {
-        selectedId = newSession.id;
-        localStorage.setItem("currentSessionId", selectedId);
-        setMessages(
-          newSession.messages.length > 0
-            ? newSession.messages.map((m) => ({ sender: m.role === "user" ? "user" : "bot", text: m.content }))
-            : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }]
-        );
-        await fetchAllSessions();
-      }
-    } else {
-      setLoading(true);
-      await fetchMessages(selectedId);
-      setLoading(false);
-    }
-  };
-
-  loadCurrentSession();
-}, []);
-
-
-  useEffect(() => {
-    if (location.state?.newLogin) {
-      console.log("🔹 تسجيل دخول جديد — جاري إنشاء جلسة جديدة...");
-      handleCreateSession();
-    }
-  }, [location.state]);
+  const { sessions, fetchAllSessions, createSession } = useChat();
 
   const fetchMessages = async (sessionId) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      const response = await axios.get(
-        `https://localhost:7017/api/Chats/sessions/${sessionId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const msgs = response.data?.data?.messages?.map((m) => ({
-        sender: m.role === "user" ? "user" : "bot",
-        text: m.content,
-      })) || [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
+      setLoading(true);
+      const response = await fetch(`https://localhost:7017/api/Chats/sessions/${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      const msgs =
+        data?.data?.messages?.map((m) => ({
+          sender: m.role === "user" ? "user" : "bot",
+          text: m.content,
+        })) || [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
 
       setMessages(msgs);
     } catch (error) {
       console.error("فشل في جلب الرسائل:", error);
       setMessages([{ sender: "bot", text: "لا توجد رسائل بعد، ابدأ المحادثة" }]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // إنشاء جلسة جديدة مع رسالة ترحيبية مباشرة
   const handleCreateSession = async () => {
     const newSession = await createSession();
     if (newSession) {
-      const msgs = newSession.messages && newSession.messages.length > 0
-        ? newSession.messages.map((m) => ({
-            sender: m.role === "user" ? "user" : "bot",
-            text: m.content,
-          }))
-        : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
-
-      setMessages(msgs); 
-      fetchAllSessions(); 
+      setMessages(
+        newSession.messages.length > 0
+          ? newSession.messages.map((m) => ({ sender: m.role === "user" ? "user" : "bot", text: m.content }))
+          : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }]
+      );
+      await fetchAllSessions();
     }
   };
 
-  // إرسال رسالة جديدة
   const handleSend = async () => {
-    if (input.trim() === "") return;
+    if (!input.trim()) return;
 
     const token = localStorage.getItem("token");
     const sessionId = localStorage.getItem("currentSessionId");
     const major = localStorage.getItem("currentSpecialty") || "General";
-
     if (!token || !sessionId) return;
 
     const userMsg = { sender: "user", text: input };
@@ -111,13 +68,13 @@ useEffect(() => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "https://localhost:7017/api/Chats/send-message",
-        { sessionId: Number(sessionId), role: "user", content: input, major },
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-      );
-
-      const botMsg = response.data?.data;
+      const response = await fetch("https://localhost:7017/api/Chats/send-message", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: Number(sessionId), role: "user", content: input, major }),
+      });
+      const data = await response.json();
+      const botMsg = data?.data;
       if (botMsg && botMsg.content) {
         setMessages((prev) => [...prev, { sender: "bot", text: botMsg.content }]);
       }
@@ -128,13 +85,34 @@ useEffect(() => {
     }
   };
 
+  // عند تحميل الصفحة، أو تغيير الجلسة
+  useEffect(() => {
+    const loadSession = async () => {
+      let sessionId = localStorage.getItem("currentSessionId");
+      if (!sessionId) {
+        const newSession = await createSession();
+        if (newSession) {
+          localStorage.setItem("currentSessionId", newSession.id);
+          sessionId = newSession.id;
+        }
+      }
+      if (sessionId) await fetchMessages(sessionId);
+    };
+
+    loadSession();
+
+    const handleSessionChange = () => {
+      const sessionId = localStorage.getItem("currentSessionId");
+      if (sessionId) fetchMessages(sessionId);
+    };
+
+    window.addEventListener("sessionSelected", handleSessionChange);
+    return () => window.removeEventListener("sessionSelected", handleSessionChange);
+  }, []);
+
   return (
     <>
-      <MenuAppBar
-        open={open}
-        handleDrawerOpen={handleDrawerOpen}
-        handleDrawerClose={handleDrawerClose}
-      />
+      <MenuAppBar open={open} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
 
       <Box
         component="main"
@@ -147,11 +125,6 @@ useEffect(() => {
           pt: 8,
           px: 3,
           fontFamily: "'Cairo', sans-serif",
-          transition: (theme) =>
-            theme.transitions.create("margin", {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
           marginRight: open ? "280px" : 0,
         }}
       >
@@ -161,9 +134,7 @@ useEffect(() => {
               <CircularProgress sx={{ color: "white" }} />
             </Box>
           ) : messages.length === 0 ? (
-            <Typography sx={{ textAlign: "center", mt: 4 }}>
-              مرحبا بك ! كيف يمكنني مساعدتك 
-            </Typography>
+            <Typography sx={{ textAlign: "center", mt: 4 }}>مرحبا بك ! كيف يمكنني مساعدتك</Typography>
           ) : (
             messages.map((msg, index) => (
               <Box
@@ -181,8 +152,6 @@ useEffect(() => {
                     bgcolor: msg.sender === "user" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.1)",
                     color: "white",
                     borderRadius: msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
-                    boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.3)",
-                    fontFamily: "'Cairo', sans-serif",
                     margin: "5px",
                   }}
                 >
@@ -206,10 +175,7 @@ useEffect(() => {
               borderRadius: "10px",
               "& .MuiOutlinedInput-root": {
                 borderRadius: "10px",
-                "&.Mui-focused fieldset": {
-                  borderColor: "#00BCD4",
-                  boxShadow: "0 0 8px rgba(0,188,212,0.4)",
-                },
+                "&.Mui-focused fieldset": { borderColor: "#00BCD4", boxShadow: "0 0 8px rgba(0,188,212,0.4)" },
                 "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
               },
               input: { color: "black", fontFamily: "'Cairo', sans-serif" },
@@ -219,7 +185,7 @@ useEffect(() => {
             onClick={handleSend}
             sx={{ bgcolor: "#00bcd4", color: "white", borderRadius: "10px", "&:hover": { bgcolor: "#0097a7" } }}
           >
-            {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
+            {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
           </IconButton>
         </Box>
       </Box>
