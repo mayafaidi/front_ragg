@@ -6,12 +6,12 @@ export default function Footer() {
      <Box
       component="footer"
       sx={{
-        backgroundColor: "black",color: "white", textAlign: "center",width: "100%",
+        backgroundColor: "transparent",color: "white", textAlign: "center",width: "100%",
         py: 1.5, position: "fixed",bottom: 0, left: 0,fontSize: "0.9rem",zIndex: 1000,
       }}
     >
       <Typography variant="body2">
-        © 2025 Oday Mere & Maya Faidi
+        Oday Mere & Maya Faidi © 2025
       </Typography>
     </Box>
   )
