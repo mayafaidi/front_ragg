@@ -5,6 +5,7 @@ import MenuAppBar from "../../component/navbar/MenuAppBar";
 import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useChat } from "../../context/ChatContext";
+import { useLocation } from "react-router-dom";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -16,33 +17,45 @@ export default function Home() {
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
+  const location = useLocation();
   const { sessions, fetchAllSessions, createSession, searchMessages } = useChat();
 
-  // تحميل الرسائل للجلسة الحالية
+  
+ // عند تحميل الصفحة
+useEffect(() => {
+  const loadCurrentSession = async () => {
+    let selectedId = localStorage.getItem("currentSessionId");
+
+    if (!selectedId) {
+     
+      const newSession = await createSession();
+      if (newSession) {
+        selectedId = newSession.id;
+        localStorage.setItem("currentSessionId", selectedId);
+        setMessages(
+          newSession.messages.length > 0
+            ? newSession.messages.map((m) => ({ sender: m.role === "user" ? "user" : "bot", text: m.content }))
+            : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }]
+        );
+        await fetchAllSessions();
+      }
+    } else {
+      setLoading(true);
+      await fetchMessages(selectedId);
+      setLoading(false);
+    }
+  };
+
+  loadCurrentSession();
+}, []);
+
+
   useEffect(() => {
-    const loadCurrentSession = async () => {
-      const selectedId = localStorage.getItem("currentSessionId");
-      if (selectedId) {
-        setLoading(true);
-        await fetchMessages(selectedId);
-        setLoading(false);
-      }
-    };
-
-    loadCurrentSession();
-
-    const handleSessionSelected = async () => {
-      const selectedId = localStorage.getItem("currentSessionId");
-      if (selectedId) {
-        setLoading(true);
-        await fetchMessages(selectedId);
-        setLoading(false);
-      }
-    };
-
-    window.addEventListener("sessionSelected", handleSessionSelected);
-    return () => window.removeEventListener("sessionSelected", handleSessionSelected);
-  }, []);
+    if (location.state?.newLogin) {
+      console.log("🔹 تسجيل دخول جديد — جاري إنشاء جلسة جديدة...");
+      handleCreateSession();
+    }
+  }, [location.state]);
 
   const fetchMessages = async (sessionId) => {
     const token = localStorage.getItem("token");
@@ -77,8 +90,8 @@ export default function Home() {
           }))
         : [{ sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟" }];
 
-      setMessages(msgs); // عرض الرسائل فورًا
-      fetchAllSessions(); // تحديث قائمة الجلسات
+      setMessages(msgs); 
+      fetchAllSessions(); 
     }
   };
 

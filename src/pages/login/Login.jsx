@@ -73,7 +73,8 @@ export default function Login() {
           transition: Bounce,
         }
       );
-      setTimeout(() => navigate("/Home"), 1000);
+      setTimeout(() => navigate("/Home", { state: { newLogin: true } }), 1000);
+
     } catch (error) {
       const message = error.response?.data.message || error.message;
       if (message.toLowerCase().includes("confirm")) {
