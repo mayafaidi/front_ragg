@@ -13,6 +13,7 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);       // لتحميل الصفحة فقط (مش للإرسال)
 const [copiedId, setCopiedId] = useState(null);//هاي عشان اشارة الكوبي 
+const messagesEndRef = React.useRef(null);
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
@@ -87,7 +88,12 @@ const [copiedId, setCopiedId] = useState(null);//هاي عشان اشارة ال
 
     setMessages((prev) => [...prev, userMsg, typingMsg]);
 
-   console.log("maya ");
+userMsg.time = new Date().toLocaleTimeString("EG", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+
     setInput("");
     setSending(true);
 
@@ -109,16 +115,25 @@ const [copiedId, setCopiedId] = useState(null);//هاي عشان اشارة ال
       const data = await response.json();
       const botMsg = data?.data;
 
-      if (botMsg && botMsg.content) {
-        // 3) استبدال فقاعة "يكتب…" بردّ البوت الحقيقي
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === typingId
-              ? { id: `b-${Date.now()}`, sender: "bot", text: botMsg.content, isTyping: false }
-              : m
-          )
-        );
-      } else {
+     if (botMsg && botMsg.content) {
+  setMessages((prev) =>
+    prev.map((m) =>
+      m.id === typingId
+        ? {
+            id: `b-${Date.now()}`,
+            sender: "bot",
+            text: botMsg.content,
+            isTyping: false,
+            time: new Date().toLocaleTimeString("EG", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          }
+        : m
+    )
+  );
+}
+ else {
         // لو الرد غير متوقّع، احذف فقاعة "يكتب…"
         setMessages((prev) => prev.filter((m) => m.id !== typingId));
       }
@@ -147,6 +162,11 @@ const handleCopy = async (text, id) => {
 
 
 
+useEffect(() => {
+  if (messagesEndRef.current) {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+}, [messages]);
 
 
 
@@ -215,6 +235,8 @@ const handleCopy = async (text, id) => {
                   mb: 1.5,
                 }}
               >
+                
+
              <Paper
   sx={{
     p: 1.5,
@@ -241,6 +263,11 @@ const handleCopy = async (text, id) => {
   <Typography sx={{ fontSize: "16px", lineHeight: 1.5 }}>
     {msg.text}
   </Typography>
+{msg.time && (
+  <Typography sx={{ fontSize: "12px", color: "gray", mt: 0.5 }}>
+    {msg.time}
+  </Typography>
+)}
 
   {!msg.isTyping && (
     <IconButton
@@ -269,8 +296,9 @@ const handleCopy = async (text, id) => {
               </Box>
             ))
           )}
+          
         </Box>
-
+<div ref={messagesEndRef} />
         <Box sx={{ position: "sticky", bottom: 0, zIndex: 100, bgcolor: "transparent" }}>
           <Box sx={{ display: "flex", gap: 1, px: 1, pb: 0.5 }}>
             <TextField

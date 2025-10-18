@@ -582,14 +582,14 @@ const [username,setUsername]=useState("");
               handleDownloadSession(session.id);
             }}
             title="تحميل PDF"
-            sx={{ color: "#00bcd4" }}
+            sx={{ color: "#ffffffff" }}
           >
             <FileDownloadIcon fontSize="small" />
           </IconButton>
 
           <IconButton
             edge="end"
-            sx={{ color: "#FFD700" }}
+            sx={{ color: "#ffffffff" }}
             onClick={(e) => {
               e.stopPropagation();
               handleRenameSession(session.id, session.title);
@@ -600,7 +600,7 @@ const [username,setUsername]=useState("");
 
           <IconButton
             edge="end"
-            sx={{ color: "#ff5252" }}
+            sx={{ color: "#ffffffff" }}
             onClick={async (e) => {
               e.stopPropagation();
               if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
