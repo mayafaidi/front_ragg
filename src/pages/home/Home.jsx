@@ -215,62 +215,54 @@ const handleCopy = async (text, id) => {
                   mb: 1.5,
                 }}
               >
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    maxWidth: "75%",
-                    bgcolor:
-                      msg.sender === "user"
-                        ? "rgba(0,188,212,0.1)"
-                        : msg.isTyping
-                        ? "rgba(255,255,255,0.08)"
-                        : "rgba(255,255,255,0.1)",
-                    color: "white",
-                    borderRadius:
-                      msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
-                    margin: "5px",
-                    opacity: msg.isTyping ? 0.8 : 1,
-                    fontStyle: msg.isTyping ? "italic" : "normal",
-                   position: "relative", // ضروري لظهور أيقونة النسخ داخل الفقاعة
-    "&:hover .copy-btn": { opacity: 1 }, // لإظهار زر النسخ عند المرور
+             <Paper
+  sx={{
+    p: 1.5,
+    maxWidth: "75%",
+    bgcolor:
+      msg.sender === "user"
+        ? "rgba(0,188,212,0.1)"
+        : msg.isTyping
+        ? "rgba(255,255,255,0.08)"
+        : "rgba(255,255,255,0.1)",
+    color: "white",
+    borderRadius:
+      msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
+    margin: "5px",
+    opacity: msg.isTyping ? 0.8 : 1,
+    fontStyle: msg.isTyping ? "italic" : "normal",
+    position: "relative",
+    "&:hover .copy-btn": {
+      opacity: 1,
+      transform: "translateY(0) scale(1)",
+    },
   }}
-                >
-                  <Typography sx={{ fontSize: "16px" }}>
-                    {msg.text}
-                  </Typography>
+>
+  <Typography sx={{ fontSize: "16px", lineHeight: 1.5 }}>
+    {msg.text}
+  </Typography>
 
-
- {!msg.isTyping && (
-        <IconButton
-          className="copy-btn"
-          size="small"
-          onClick={() => handleCopy(msg.text, msg.id)}
-          sx={{
-            position: "absolute",
-           //top: 4,
-            left:-13,
-            paddingRight:0,
-            //مهمين لموقع الايقونه لطلعو عيني 
-        //      left: msg.sender === "user" ? 6 : "auto",
-        // right: msg.sender === "bot" ? 6 : "auto",
- bottom: -5, // تحت الفقاعة
-      left: msg.sender === "user" ? 6: "auto",
-      right: msg.sender === "bot" ? 6 : "auto",
-      // transform: "translateY(100%)", // ينزل شوي تحت الرسالة
-
-
-            opacity: 0,
-        //transition: "opacity 0.3s, transform 0.2s",
-        color: copiedId === msg.id ? "#00BCD4" : "rgba(255,255,255,0.7)",
+  {!msg.isTyping && (
+    <IconButton
+      className="copy-btn"
+      size="small"
+      onClick={() => handleCopy(msg.text, msg.id)}
+      sx={{
+        position: "absolute",
+        bottom: -3,
+        right: msg.sender === "bot" ? 8 : "auto",
+        left: msg.sender === "user" ? 8 : "auto",
+        opacity: 0,
+        transform: "translateY(5px) scale(0.9)",
+        transition: "opacity 0.3s ease, transform 0.3s ease",
+        color: copiedId === msg.id ? "#00BCD4" : "rgba(255,255,255,0.6)",
         "&:hover": {
-          color: "#2c8e9bff",
-          transform: "scale(1.2)",
+          color: "#00BCD4",
+          transform: "translateY(0) scale(1.1)",
         },
-       // backgroundColor: "rgba(255,255,255,0.05)",
-        //borderRadius: "8px",
       }}
     >
-      <ContentCopyIcon sx={{ fontSize: 18 }} />
+      <ContentCopyIcon sx={{ fontSize: 14 }} />
     </IconButton>
   )}
 </Paper>
