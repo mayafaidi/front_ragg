@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -58,6 +61,22 @@ const MyAppBar = styled(MuiAppBar, {
     }),
   }),
 }));
+const passwordSchema = yup.object().shape({
+  currentPassword: yup
+    .string()
+    .required("يرجى إدخال كلمة المرور الحالية")
+    .min(6, "كلمة المرور الحالية يجب أن تتكون من 6 أحرف على الأقل"),
+
+  newPassword: yup
+    .string()
+    .required("يرجى إدخال كلمة المرور الجديدة")
+    .min(6, "الحد الأدنى لطول كلمة المرور هو 6 أحرف")
+    .matches(/[A-Z]/, "يجب أن تحتوي على حرف كبير واحد على الأقل (A-Z)")
+    .matches(/[a-z]/, "يجب أن تحتوي على حرف صغير واحد على الأقل (a-z)")
+    .matches(/[0-9]/, "يجب أن تحتوي على رقم واحد على الأقل (0-9)")
+    .matches(/[@$!%*?&]/, "يجب أن تحتوي على رمز خاص واحد على الأقل مثل @$!%*?&")
+    .notOneOf([yup.ref("currentPassword")], "يجب أن تختلف كلمة المرور الجديدة عن الحالية"),
+});
 
 export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }) {
   const [auth] = useState(true);
@@ -71,6 +90,14 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
     handleDownloadSession,
     getUserStats,
   } = useChat();
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+  reset,
+} = useForm({
+  resolver: yupResolver(passwordSchema),
+});
 
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const [specialty, setSpecialty] = useState(localStorage.getItem("currentSpecialty") || "");
@@ -87,6 +114,8 @@ const [username,setUsername]=useState("");
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
   const [renameSessionId, setRenameSessionId] = useState(null);
+const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [sessionToDelete, setSessionToDelete] = useState(null);
 
   // Account Menu handlers
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
@@ -131,40 +160,35 @@ const [username,setUsername]=useState("");
     }
   };
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword) {
-      alert("يرجى إدخال كلمتي المرور");
-      return;
-    }
+  const handleChangePassword = async (data) => {
+  const { currentPassword, newPassword } = data;
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    setChangingPassword(true);
-    try {
-      const response = await axios.patch(
-        "https://localhost:7017/api/Accounts/ChangePassword",
-        {
-          currentPassword: currentPassword.trim(),
-          newPassword: newPassword.trim(),
+  setChangingPassword(true);
+  try {
+    await axios.patch(
+      "https://localhost:7017/api/Accounts/ChangePassword",
+      {
+        currentPassword: currentPassword.trim(),
+        newPassword: newPassword.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      }
+    );
 
-      alert("تم تغيير كلمة المرور بنجاح");
-      setCurrentPassword("");
-      setNewPassword("");
-    } catch (error) {
-      alert(error.response?.data?.message || "فشل تغيير كلمة المرور");
-    } finally {
-      setChangingPassword(false);
-    }
-  };
+    alert("✅ تم تغيير كلمة المرور بنجاح");
+  } catch (error) {
+    alert(error.response?.data?.message || "❌ فشل تغيير كلمة المرور");
+  } finally {
+    setChangingPassword(false);
+  }
+};
+
  useEffect(() => {
 
  const storedName = localStorage.getItem("usrname");
@@ -307,66 +331,85 @@ const [username,setUsername]=useState("");
 
       {/*  Dialog تغيير كلمة المرور */}
       <Dialog
-        open={openPasswordDialog}
-        onClose={handleClosePasswordDialog}
-        TransitionComponent={Grow}
-        transitionDuration={300}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            p: 2,
-            bgcolor: "#0e1d3a",
-            color: "white",
-            textAlign: "center",
-            width: 400,
-          },
+  open={openPasswordDialog}
+  onClose={handleClosePasswordDialog}
+  TransitionComponent={Grow}
+  transitionDuration={300}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+      bgcolor: "#0e1d3a",
+      color: "white",
+      textAlign: "center",
+      width: 420,
+    },
+  }}
+  BackdropProps={{
+    sx: { backdropFilter: "blur(6px)" },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>
+    تغيير كلمة المرور
+  </DialogTitle>
+
+  <form
+    onSubmit={handleSubmit(async (data) => {
+      await handleChangePassword(data);
+      handleClosePasswordDialog();
+      reset();
+    })}
+  >
+    <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+      <TextField
+        label="كلمة المرور الحالية"
+        type="password"
+        fullWidth
+        {...register("currentPassword")}
+        error={!!errors.currentPassword}
+        helperText={errors.currentPassword?.message}
+        sx={{
+          input: { color: "white" },
+          label: { color: "#aaa" },
+          "& .MuiFormHelperText-root": { color: "#f87171" },
         }}
-        BackdropProps={{
-          sx: { backdropFilter: "blur(6px)" },
+      />
+
+      <TextField
+        label="كلمة المرور الجديدة"
+        type="password"
+        fullWidth
+        {...register("newPassword")}
+        error={!!errors.newPassword}
+        helperText={errors.newPassword?.message}
+        sx={{
+          input: { color: "white" },
+          label: { color: "#aaa" },
+          "& .MuiFormHelperText-root": { color: "#f87171" },
+        }}
+      />
+    </DialogContent>
+
+    <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+      <Button onClick={handleClosePasswordDialog} sx={{ color: "#aaa" }}>
+        إلغاء
+      </Button>
+      <Button
+        type="submit"
+        variant="outlined"
+        disabled={changingPassword}
+        sx={{
+          color: "#4caf50",
+          borderColor: "#4caf50",
+          "&:hover": { backgroundColor: "#1b5e20", color: "white" },
         }}
       >
-        <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>تغيير كلمة المرور</DialogTitle>
+        {changingPassword ? "جاري التغيير..." : "حفظ"}
+      </Button>
+    </DialogActions>
+  </form>
+</Dialog>
 
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-          <TextField
-            label="كلمة المرور الحالية"
-            type="password"
-            fullWidth
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            sx={{ input: { color: "white" }, label: { color: "#aaa" } }}
-          />
-          <TextField
-            label="كلمة المرور الجديدة"
-            type="password"
-            fullWidth
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            sx={{ input: { color: "white" }, label: { color: "#aaa" } }}
-          />
-        </DialogContent>
-
-        <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button onClick={handleClosePasswordDialog} sx={{ color: "#aaa" }}>
-            إلغاء
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={async () => {
-              await handleChangePassword();
-              handleClosePasswordDialog();
-            }}
-            disabled={changingPassword}
-            sx={{
-              color: "#4caf50",
-              borderColor: "#4caf50",
-              "&:hover": { backgroundColor: "#1b5e20", color: "white" },
-            }}
-          >
-            {changingPassword ? "جاري التغيير..." : "حفظ"}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/*  Dialog إعادة تسمية المحادثة */}
       <Dialog
@@ -599,23 +642,74 @@ const [username,setUsername]=useState("");
           </IconButton>
 
           <IconButton
-            edge="end"
-            sx={{ color: "#ffffffff" }}
-            onClick={async (e) => {
-              e.stopPropagation();
-              if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
-                await deleteSession(session.id);
-                fetchAllSessions();
-              }
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+  edge="end"
+  sx={{ color: "#ffffffff" }}
+  onClick={(e) => {
+    e.stopPropagation();
+    setSessionToDelete(session.id);
+    setDeleteDialogOpen(true);
+  }}
+>
+  <DeleteIcon fontSize="small" />
+</IconButton>
+
         </Box>
       </ListItem>
     );
   })}
 </List>
+{/* Dialog تأكيد الحذف */}
+<Dialog
+  open={deleteDialogOpen}
+  onClose={() => setDeleteDialogOpen(false)}
+  TransitionComponent={Grow}
+  transitionDuration={300}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+      bgcolor: "#0e1d3a",
+      color: "white",
+      textAlign: "center",
+      width: 380,
+    },
+  }}
+  BackdropProps={{
+    sx: { backdropFilter: "blur(6px)" },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
+    تأكيد الحذف
+  </DialogTitle>
+
+  <DialogContent sx={{ mt: 1 }}>
+    <Typography sx={{ color: "white" }}>
+      هل تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.
+    </Typography>
+  </DialogContent>
+
+  <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+    <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: "#aaa" }}>
+      إلغاء
+    </Button>
+    <Button
+      variant="outlined"
+      onClick={async () => {
+        await deleteSession(sessionToDelete);
+        await fetchAllSessions();
+        setDeleteDialogOpen(false);
+      }}
+      sx={{
+        color: "#ef4444",
+        borderColor: "#ef4444",
+        "&:hover": { backgroundColor: "#b91c1c", color: "white" },
+      }}
+    >
+      حذف
+    </Button>
+  </DialogActions>
+</Dialog>
+
       </Drawer>
     </>
   );
