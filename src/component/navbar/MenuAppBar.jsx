@@ -535,59 +535,87 @@ const [username,setUsername]=useState("");
           </List>
         )}
 
-        <List>
-          {filteredSessions.map((session, index) => {
-            const currentSessionId = Number(localStorage.getItem("currentSessionId"));
-            return (
-              <ListItem
-                key={session.id}
-                selected={session.id === currentSessionId}
-                divider
-                sx={{
-                  direction: "rtl",
-                  justifyContent: "space-between",
-                  textAlign: "right",
-                  "&:hover": { cursor: "pointer", backgroundColor: "rgba(0,188,212,0.2)" },
-                }}
-              >
-                <ListItemText
-                  primary={session.title || `محادثة ${index + 1}`}
-                  onClick={() => {
-                    localStorage.setItem("currentSessionId", session.id);
-                    window.dispatchEvent(new Event("sessionSelected"));
-                    handleDrawerClose();
-                  }}
-                />
-                <IconButton onClick={() => handleDownloadSession(session.id)} title="تحميل PDF">
-                  <FileDownloadIcon />
-                </IconButton>
-                <IconButton
-                  edge="end"
-                  sx={{ color: "#FFD700", mr: 1 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRenameSession(session.id, session.title);
-                  }}
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  edge="end"
-                  sx={{ color: "#ff5252" }}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
-                      await deleteSession(session.id);
-                      fetchAllSessions();
-                    }
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </ListItem>
-            );
-          })}
-        </List>
+       <List>
+  {filteredSessions.map((session, index) => {
+    const currentSessionId = Number(localStorage.getItem("currentSessionId"));
+    return (
+      <ListItem
+        key={session.id}
+        selected={session.id === currentSessionId}
+        divider
+        sx={{
+          direction: "rtl",
+          justifyContent: "space-between",
+          textAlign: "right",
+          position: "relative",
+          "&:hover": { cursor: "pointer", backgroundColor: "rgba(0,188,212,0.15)" },
+          "&:hover .actions": {
+            opacity: 1,
+            transform: "translateX(0)",
+          },
+        }}
+      >
+        <ListItemText
+          primary={session.title || `محادثة ${index + 1}`}
+          onClick={() => {
+            localStorage.setItem("currentSessionId", session.id);
+            window.dispatchEvent(new Event("sessionSelected"));
+            handleDrawerClose();
+          }}
+        />
+
+        {/* مجموعة الأيقونات */}
+        <Box
+          className="actions"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            opacity: 0,
+            transform: "translateX(10px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+          }}
+        >
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownloadSession(session.id);
+            }}
+            title="تحميل PDF"
+            sx={{ color: "#00bcd4" }}
+          >
+            <FileDownloadIcon fontSize="small" />
+          </IconButton>
+
+          <IconButton
+            edge="end"
+            sx={{ color: "#FFD700" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRenameSession(session.id, session.title);
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+
+          <IconButton
+            edge="end"
+            sx={{ color: "#ff5252" }}
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (window.confirm("هل تريد حذف هذه المحادثة؟")) {
+                await deleteSession(session.id);
+                fetchAllSessions();
+              }
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      </ListItem>
+    );
+  })}
+</List>
       </Drawer>
     </>
   );
