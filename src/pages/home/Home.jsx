@@ -5,13 +5,14 @@ import MenuAppBar from "../../component/navbar/MenuAppBar";
 import { useChat } from "../../context/ChatContext";
 import CircularProgress from "@mui/material/CircularProgress";
 import Footer from "../../component/footer/Footer";
-
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);      // spinner زر الإرسال
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);       // لتحميل الصفحة فقط (مش للإرسال)
+const [copiedId, setCopiedId] = useState(null);//هاي عشان اشارة الكوبي 
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
@@ -129,6 +130,29 @@ export default function Home() {
       setSending(false);
     }
   };
+//عشان اشارة الكوبي لبتطلع بكل مسج 
+
+const handleCopy = async (text, id) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  } catch (err) {
+    console.error("فشل النسخ:", err);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     const loadSession = async () => {
@@ -207,12 +231,49 @@ export default function Home() {
                     margin: "5px",
                     opacity: msg.isTyping ? 0.8 : 1,
                     fontStyle: msg.isTyping ? "italic" : "normal",
-                  }}
+                   position: "relative", // ضروري لظهور أيقونة النسخ داخل الفقاعة
+    "&:hover .copy-btn": { opacity: 1 }, // لإظهار زر النسخ عند المرور
+  }}
                 >
                   <Typography sx={{ fontSize: "16px" }}>
                     {msg.text}
                   </Typography>
-                </Paper>
+
+
+ {!msg.isTyping && (
+        <IconButton
+          className="copy-btn"
+          size="small"
+          onClick={() => handleCopy(msg.text, msg.id)}
+          sx={{
+            position: "absolute",
+           //top: 4,
+            left:-13,
+            paddingRight:0,
+            //مهمين لموقع الايقونه لطلعو عيني 
+        //      left: msg.sender === "user" ? 6 : "auto",
+        // right: msg.sender === "bot" ? 6 : "auto",
+ bottom: -5, // تحت الفقاعة
+      left: msg.sender === "user" ? 6: "auto",
+      right: msg.sender === "bot" ? 6 : "auto",
+      // transform: "translateY(100%)", // ينزل شوي تحت الرسالة
+
+
+            opacity: 0,
+        //transition: "opacity 0.3s, transform 0.2s",
+        color: copiedId === msg.id ? "#00BCD4" : "rgba(255,255,255,0.7)",
+        "&:hover": {
+          color: "#2c8e9bff",
+          transform: "scale(1.2)",
+        },
+       // backgroundColor: "rgba(255,255,255,0.05)",
+        //borderRadius: "8px",
+      }}
+    >
+      <ContentCopyIcon sx={{ fontSize: 18 }} />
+    </IconButton>
+  )}
+</Paper>
               </Box>
             ))
           )}
@@ -240,10 +301,10 @@ export default function Home() {
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
                   "&.Mui-focused fieldset": {
-                    borderColor: "#00BCD4",
+                    borderColor: "#1E3A8A",
                     boxShadow: "0 0 8px rgba(0,188,212,0.4)",
                   },
-                  "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
+                  // "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
                 },
                 input: { color: "black", fontFamily: "'Cairo', sans-serif" },
               }}
@@ -252,12 +313,17 @@ export default function Home() {
             <IconButton
               onClick={handleSend}
               sx={{
-                bgcolor: "#00bcd4",
+                bgcolor: "#1e3982ff",
                 color: "white",
                 borderRadius: "10px",
                
                 
-              }}
+                "&:hover": {
+      backgroundColor: "#1e3982ff", // نفس اللون بدون تغيّر
+      transform: "none",           // منع أي حركة
+               
+    },
+  }}
             >
               {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
             </IconButton>

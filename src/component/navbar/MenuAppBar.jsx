@@ -34,6 +34,9 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 
 import { useChat } from "../../context/ChatContext";
+import Avatar from "@mui/material/Avatar";
+import PersonIcon from "@mui/icons-material/Person";
+
 
 const drawerWidth = 280;
 
@@ -79,7 +82,7 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-
+const [username,setUsername]=useState("");
   // rename dialog
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
@@ -162,7 +165,11 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
       setChangingPassword(false);
     }
   };
+ useEffect(() => {
 
+ const storedName = localStorage.getItem("usrname");
+  if (storedName) setUsername(storedName);
+}, []);
   useEffect(() => {
     const updateData = async () => {
       await fetchAllSessions();
@@ -216,10 +223,54 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
 
             {auth && (
               <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-                <Typography sx={{ mr: 1 }}>مايا</Typography>
-                <IconButton size="large" onClick={handleAccountMenu} color="inherit">
-                  <AccountCircle />
-                </IconButton>
+              
+
+<Typography sx={{ ml: 2, fontWeight: "bold", paddingRight:2,}}>
+  {username || "User"}
+</Typography>
+ {/* <IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
+  <Avatar
+    sx={{
+      bgcolor: "#757a7bff",
+      color: "white",
+      fontWeight: "bold",
+      textTransform: "uppercase",
+      width: 36,
+      height: 36,
+      fontSize: "16px",
+      
+    }}
+  >
+    {username ? username.charAt(0) : "U"}
+  </Avatar>
+</IconButton> */}
+<IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
+  <Avatar
+    sx={{
+      bgcolor: "#0b162b",
+      color: "#ffffffff",
+      border: "2px solid #0b162b",
+      width: 40,
+      height: 40,
+      position: "relative",
+      fontWeight: "bold",
+      fontSize: "16px",
+      textTransform: "uppercase",
+    }}
+  >
+    
+    <PersonIcon
+      sx={{
+        position: "absolute",
+        opacity: 0.15,
+        fontSize: 28,
+        color: "#0b162b",
+      }}
+    />
+    
+    {username ? username.charAt(0) : "U"}
+  </Avatar>
+</IconButton>
                 <Menu
                   anchorEl={accountAnchorEl}
                   open={Boolean(accountAnchorEl)}
@@ -254,7 +305,7 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
         </Toolbar>
       </MyAppBar>
 
-      {/* 🔐 Dialog تغيير كلمة المرور */}
+      {/*  Dialog تغيير كلمة المرور */}
       <Dialog
         open={openPasswordDialog}
         onClose={handleClosePasswordDialog}
@@ -317,7 +368,7 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
         </DialogActions>
       </Dialog>
 
-      {/* ✏️ Dialog إعادة تسمية المحادثة */}
+      {/*  Dialog إعادة تسمية المحادثة */}
       <Dialog
         open={renameDialogOpen}
         onClose={() => setRenameDialogOpen(false)}
@@ -375,7 +426,7 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
         </DialogActions>
       </Dialog>
 
-      {/* 🗂️ Drawer المحادثات */}
+      {/*  Drawer المحادثات */}
       <Drawer
         sx={{
           width: drawerWidth,
@@ -402,11 +453,11 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
         <Box sx={{ display: "flex", alignItems: "center", p: 1.5, justifyContent: "center" }}>
           <Button
             sx={{
-              backgroundColor: "#00BCD4",
+              backgroundColor: " #1E3A8A",
               color: "white",
               borderRadius: "8px",
               textTransform: "none",
-              "&:hover": { backgroundColor: "#0097a7" },
+              "&:hover": { backgroundColor: "#1E3A8A" },
             }}
             onClick={handleCreateSession}
           >
