@@ -9,11 +9,11 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [sending, setSending] = useState(false);      // spinner زر الإرسال
+  const [sending, setSending] = useState(false); // spinner زر الإرسال
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);       // لتحميل الصفحة فقط (مش للإرسال)
-const [copiedId, setCopiedId] = useState(null);//هاي عشان اشارة الكوبي 
-const messagesEndRef = React.useRef(null);
+  const [loading, setLoading] = useState(true); // لتحميل الصفحة فقط (مش للإرسال)
+  const [copiedId, setCopiedId] = useState(null); //هاي عشان اشارة الكوبي
+  const messagesEndRef = React.useRef(null);
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
@@ -34,21 +34,35 @@ const messagesEndRef = React.useRef(null);
 
       const data = await response.json();
 
-      const msgs =
-        data?.data?.messages?.map((m, idx) => ({
-          id: m.id ?? `srv-${idx}`,
-          sender: m.role === "user" ? "user" : "bot",
-          text: m.content,
+      const msgs = data?.data?.messages?.map((m, idx) => ({
+        id: m.id ?? `srv-${idx}`,
+        sender: m.role === "user" ? "user" : "bot",
+        text: m.content,
+        isTyping: false,
+        time: m.createdAt
+          ? new Date(
+              new Date(m.createdAt).getTime() + 3 * 60 * 60 * 1000
+            ).toLocaleTimeString("EG", { hour: "2-digit", minute: "2-digit" })
+          : null,
+      })) || [
+        {
+          id: "welcome",
+          sender: "bot",
+          text: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
           isTyping: false,
-        })) || [
-          { id: "welcome", sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟", isTyping: false },
-        ];
+        },
+      ];
 
       setMessages(msgs);
     } catch (error) {
       console.error("فشل في جلب الرسائل:", error);
       setMessages([
-        { id: "empty", sender: "bot", text: "لا توجد رسائل بعد، ابدأ المحادثة", isTyping: false },
+        {
+          id: "empty",
+          sender: "bot",
+          text: "لا توجد رسائل بعد، ابدأ المحادثة",
+          isTyping: false,
+        },
       ]);
     } finally {
       setLoading(false);
@@ -67,7 +81,14 @@ const messagesEndRef = React.useRef(null);
               text: m.content,
               isTyping: false,
             }))
-          : [{ id: "welcome", sender: "bot", text: "مرحباً! كيف يمكنني مساعدتك اليوم؟", isTyping: false }]
+          : [
+              {
+                id: "welcome",
+                sender: "bot",
+                text: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
+                isTyping: false,
+              },
+            ]
       );
       await fetchAllSessions();
     }
@@ -81,59 +102,78 @@ const messagesEndRef = React.useRef(null);
     const sessionId = localStorage.getItem("currentSessionId");
     const major = localStorage.getItem("currentSpecialty") || "General";
     if (!token || !sessionId) return;
-//هدول عشان يكتب لبتيجي
-    const userMsg = { id: `u-${Date.now()}`, sender: "user", text: input, isTyping: false };
+    //هدول عشان يكتب لبتيجي
+    const userMsg = {
+      id: `u-${Date.now()}`,
+      sender: "user",
+      text: input,
+      isTyping: false,
+    };
     const typingId = `typing-${Date.now()}`;
-    const typingMsg = { id: typingId, sender: "bot", text: "يكتب…", isTyping: true };
+    const typingMsg = {
+      id: typingId,
+      sender: "bot",
+      text: "يكتب…",
+      isTyping: true,
+    };
 
     setMessages((prev) => [...prev, userMsg, typingMsg]);
 
-userMsg.time = new Date().toLocaleTimeString("EG", {
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
+    userMsg.time = new Date().toLocaleTimeString("EG", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     setInput("");
     setSending(true);
 
     try {
-      const response = await fetch("https://localhost:7017/api/Chats/send-message", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId: Number(sessionId),
-          role: "user",
-          content: userMsg.text,
-          major,
-        }),
-      });
+      const response = await fetch(
+        "https://localhost:7017/api/Chats/send-message",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId: Number(sessionId),
+            role: "user",
+            content: userMsg.text,
+            major,
+          }),
+        }
+      );
 
       const data = await response.json();
       const botMsg = data?.data;
-
-     if (botMsg && botMsg.content) {
-  setMessages((prev) =>
-    prev.map((m) =>
-      m.id === typingId
-        ? {
-            id: `b-${Date.now()}`,
-            sender: "bot",
-            text: botMsg.content,
-            isTyping: false,
-            time: new Date().toLocaleTimeString("EG", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          }
-        : m
-    )
-  );
-}
- else {
+      const serverTime = new Date(botMsg.createdAt);
+      const localTime = new Date(serverTime.getTime() + 3 * 60 * 60 * 1000); // +3 ساعات
+      const displayTime = localTime.toLocaleTimeString("EG", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      console.log(data);
+      if (botMsg && botMsg.content) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === typingId
+              ? {
+                  id: `b-${Date.now()}`,
+                  sender: "bot",
+                  text: botMsg.content,
+                  isTyping: false,
+                  time: botMsg.createdAt
+                    ? new Date(botMsg.createdAt).toLocaleTimeString("EG", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : null,
+                }
+              : m
+          )
+        );
+      } else {
         // لو الرد غير متوقّع، احذف فقاعة "يكتب…"
         setMessages((prev) => prev.filter((m) => m.id !== typingId));
       }
@@ -145,34 +185,23 @@ userMsg.time = new Date().toLocaleTimeString("EG", {
       setSending(false);
     }
   };
-//عشان اشارة الكوبي لبتطلع بكل مسج 
+  //عشان اشارة الكوبي لبتطلع بكل مسج
 
-const handleCopy = async (text, id) => {
-  try {
-    await navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  } catch (err) {
-    console.error("فشل النسخ:", err);
-  }
-};
+  const handleCopy = async (text, id) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error("فشل النسخ:", err);
+    }
+  };
 
-
-
-
-
-
-useEffect(() => {
-  if (messagesEndRef.current) {
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }
-}, [messages]);
-
-
-
-
-
-
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -195,12 +224,17 @@ useEffect(() => {
     };
 
     window.addEventListener("sessionSelected", handleSessionChange);
-    return () => window.removeEventListener("sessionSelected", handleSessionChange);
+    return () =>
+      window.removeEventListener("sessionSelected", handleSessionChange);
   }, []);
 
   return (
     <>
-      <MenuAppBar open={open} handleDrawerOpen={handleDrawerOpen} handleDrawerClose={handleDrawerClose} />
+      <MenuAppBar
+        open={open}
+        handleDrawerOpen={handleDrawerOpen}
+        handleDrawerClose={handleDrawerClose}
+      />
 
       <Box
         component="main"
@@ -231,75 +265,87 @@ useEffect(() => {
                 key={msg.id}
                 sx={{
                   display: "flex",
-                  justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+                  justifyContent:
+                    msg.sender === "user" ? "flex-end" : "flex-start",
                   mb: 1.5,
                 }}
               >
-                
+                <Paper
+                  sx={{
+                    p: 1.5,
+                    maxWidth: "75%",
+                    bgcolor:
+                      msg.sender === "user"
+                        ? "rgba(0,188,212,0.1)"
+                        : msg.isTyping
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(255,255,255,0.1)",
+                    color: "white",
+                    borderRadius:
+                      msg.sender === "user"
+                        ? "16px 16px 0 16px"
+                        : "16px 16px 16px 0",
+                    margin: "5px",
+                    opacity: msg.isTyping ? 0.8 : 1,
+                    fontStyle: msg.isTyping ? "italic" : "normal",
+                    position: "relative",
+                    "&:hover .copy-btn": {
+                      opacity: 1,
+                      transform: "translateY(0) scale(1)",
+                    },
+                  }}
+                >
+                  <Typography sx={{ fontSize: "16px", lineHeight: 1.5 }}>
+                    {msg.text}
+                  </Typography>
+                  {msg.time && (
+                    <Typography
+                      sx={{ fontSize: "12px", color: "gray", mt: 0.5 }}
+                    >
+                      {msg.time}
+                    </Typography>
+                  )}
 
-             <Paper
-  sx={{
-    p: 1.5,
-    maxWidth: "75%",
-    bgcolor:
-      msg.sender === "user"
-        ? "rgba(0,188,212,0.1)"
-        : msg.isTyping
-        ? "rgba(255,255,255,0.08)"
-        : "rgba(255,255,255,0.1)",
-    color: "white",
-    borderRadius:
-      msg.sender === "user" ? "16px 16px 0 16px" : "16px 16px 16px 0",
-    margin: "5px",
-    opacity: msg.isTyping ? 0.8 : 1,
-    fontStyle: msg.isTyping ? "italic" : "normal",
-    position: "relative",
-    "&:hover .copy-btn": {
-      opacity: 1,
-      transform: "translateY(0) scale(1)",
-    },
-  }}
->
-  <Typography sx={{ fontSize: "16px", lineHeight: 1.5 }}>
-    {msg.text}
-  </Typography>
-{msg.time && (
-  <Typography sx={{ fontSize: "12px", color: "gray", mt: 0.5 }}>
-    {msg.time}
-  </Typography>
-)}
-
-  {!msg.isTyping && (
-    <IconButton
-      className="copy-btn"
-      size="small"
-      onClick={() => handleCopy(msg.text, msg.id)}
-      sx={{
-        position: "absolute",
-        bottom: -3,
-        right: msg.sender === "bot" ? 8 : "auto",
-        left: msg.sender === "user" ? 8 : "auto",
-        opacity: 0,
-        transform: "translateY(5px) scale(0.9)",
-        transition: "opacity 0.3s ease, transform 0.3s ease",
-        color: copiedId === msg.id ? "#00BCD4" : "rgba(255,255,255,0.6)",
-        "&:hover": {
-          color: "#00BCD4",
-          transform: "translateY(0) scale(1.1)",
-        },
-      }}
-    >
-      <ContentCopyIcon sx={{ fontSize: 14 }} />
-    </IconButton>
-  )}
-</Paper>
+                  {!msg.isTyping && (
+                    <IconButton
+                      className="copy-btn"
+                      size="small"
+                      onClick={() => handleCopy(msg.text, msg.id)}
+                      sx={{
+                        position: "absolute",
+                        bottom: -3,
+                        right: msg.sender === "bot" ? 8 : "auto",
+                        left: msg.sender === "user" ? 8 : "auto",
+                        opacity: 0,
+                        transform: "translateY(5px) scale(0.9)",
+                        transition: "opacity 0.3s ease, transform 0.3s ease",
+                        color:
+                          copiedId === msg.id
+                            ? "#00BCD4"
+                            : "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#00BCD4",
+                          transform: "translateY(0) scale(1.1)",
+                        },
+                      }}
+                    >
+                      <ContentCopyIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  )}
+                </Paper>
               </Box>
             ))
           )}
-          
         </Box>
-<div ref={messagesEndRef} />
-        <Box sx={{ position: "sticky", bottom: 0, zIndex: 100, bgcolor: "transparent" }}>
+        <div ref={messagesEndRef} />
+        <Box
+          sx={{
+            position: "sticky",
+            bottom: 0,
+            zIndex: 100,
+            bgcolor: "transparent",
+          }}
+        >
           <Box sx={{ display: "flex", gap: 1, px: 1, pb: 0.5 }}>
             <TextField
               fullWidth
@@ -336,16 +382,18 @@ useEffect(() => {
                 bgcolor: "#1e3982ff",
                 color: "white",
                 borderRadius: "10px",
-               
-                
+
                 "&:hover": {
-      backgroundColor: "#1e3982ff", // نفس اللون بدون تغيّر
-      transform: "none",           // منع أي حركة
-               
-    },
-  }}
+                  backgroundColor: "#1e3982ff", // نفس اللون بدون تغيّر
+                  transform: "none", // منع أي حركة
+                },
+              }}
             >
-              {sending ? <CircularProgress size={24} sx={{ color: "white" }} /> : <SendIcon />}
+              {sending ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : (
+                <SendIcon />
+              )}
             </IconButton>
           </Box>
 
