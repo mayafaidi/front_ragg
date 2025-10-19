@@ -40,7 +40,6 @@ import { useChat } from "../../context/ChatContext";
 import Avatar from "@mui/material/Avatar";
 import PersonIcon from "@mui/icons-material/Person";
 
-
 const drawerWidth = 280;
 
 const MyAppBar = styled(MuiAppBar, {
@@ -75,10 +74,17 @@ const passwordSchema = yup.object().shape({
     .matches(/[a-z]/, "يجب أن تحتوي على حرف صغير واحد على الأقل (a-z)")
     .matches(/[0-9]/, "يجب أن تحتوي على رقم واحد على الأقل (0-9)")
     .matches(/[@$!%*?&]/, "يجب أن تحتوي على رمز خاص واحد على الأقل مثل @$!%*?&")
-    .notOneOf([yup.ref("currentPassword")], "يجب أن تختلف كلمة المرور الجديدة عن الحالية"),
+    .notOneOf(
+      [yup.ref("currentPassword")],
+      "يجب أن تختلف كلمة المرور الجديدة عن الحالية"
+    ),
 });
 
-export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }) {
+export default function MenuAppBar({
+  open,
+  handleDrawerOpen,
+  handleDrawerClose,
+}) {
   const [auth] = useState(true);
   const {
     sessions,
@@ -90,17 +96,19 @@ export default function MenuAppBar({ open, handleDrawerOpen, handleDrawerClose }
     handleDownloadSession,
     getUserStats,
   } = useChat();
-const {
-  register,
-  handleSubmit,
-  formState: { errors },
-  reset,
-} = useForm({
-  resolver: yupResolver(passwordSchema),
-});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(passwordSchema),
+  });
 
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
-  const [specialty, setSpecialty] = useState(localStorage.getItem("currentSpecialty") || "");
+  const [specialty, setSpecialty] = useState(
+    localStorage.getItem("currentSpecialty") || ""
+  );
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -109,13 +117,13 @@ const {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-const [username,setUsername]=useState("");
+  const [username, setUsername] = useState("");
   // rename dialog
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
   const [renameSessionId, setRenameSessionId] = useState(null);
-const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-const [sessionToDelete, setSessionToDelete] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState(null);
 
   // Account Menu handlers
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
@@ -161,39 +169,38 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
   };
 
   const handleChangePassword = async (data) => {
-  const { currentPassword, newPassword } = data;
-  const token = localStorage.getItem("token");
-  if (!token) return;
+    const { currentPassword, newPassword } = data;
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  setChangingPassword(true);
-  try {
-    await axios.patch(
-      "https://localhost:7017/api/Accounts/ChangePassword",
-      {
-        currentPassword: currentPassword.trim(),
-        newPassword: newPassword.trim(),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+    setChangingPassword(true);
+    try {
+      await axios.patch(
+        "https://localhost:7017/api/Accounts/ChangePassword",
+        {
+          currentPassword: currentPassword.trim(),
+          newPassword: newPassword.trim(),
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    alert("✅ تم تغيير كلمة المرور بنجاح");
-  } catch (error) {
-    alert(error.response?.data?.message || "❌ فشل تغيير كلمة المرور");
-  } finally {
-    setChangingPassword(false);
-  }
-};
+      alert("✅ تم تغيير كلمة المرور بنجاح");
+    } catch (error) {
+      alert(error.response?.data?.message || "❌ فشل تغيير كلمة المرور");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
- useEffect(() => {
-
- const storedName = localStorage.getItem("usrname");
-  if (storedName) setUsername(storedName);
-}, []);
+  useEffect(() => {
+    const storedName = localStorage.getItem("usrname");
+    if (storedName) setUsername(storedName);
+  }, []);
   useEffect(() => {
     const updateData = async () => {
       await fetchAllSessions();
@@ -207,7 +214,9 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
 
   const filteredSessions = searchQuery
     ? sessions.filter((s, index) =>
-        (s.title || `محادثة ${index + 1}`).toLowerCase().includes(searchQuery.toLowerCase())
+        (s.title || `محادثة ${index + 1}`)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
       )
     : sessions;
 
@@ -230,7 +239,15 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
                 value={specialty}
                 onChange={handleSpecialtyChange}
                 displayEmpty
-                MenuProps={{ PaperProps: { sx: { direction: "rtl", bgcolor: "#0b162b", color: "white" } } }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      direction: "rtl",
+                      bgcolor: "#0b162b",
+                      color: "white",
+                    },
+                  },
+                }}
               >
                 <MenuItem value="" disabled>
                   🎓 اختر تخصصك
@@ -240,19 +257,19 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
                 <MenuItem value="CSec">الأمن السيبراني</MenuItem>
                 <MenuItem value="CAP">علم الحاسوب في سوق العمل</MenuItem>
                 <MenuItem value="CAP_SW">علم الحاسوب تركيز برمجيات</MenuItem>
-                <MenuItem value="CAP_AI">علم الحاسوب تركيز الذكاء الاصطناعي</MenuItem>
+                <MenuItem value="CAP_AI">
+                  علم الحاسوب تركيز الذكاء الاصطناعي
+                </MenuItem>
                 <MenuItem value="MIS">أنظمة المعلومات الإدارية</MenuItem>
               </Select>
             </FormControl>
 
             {auth && (
               <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-              
-
-<Typography sx={{ ml: 2, fontWeight: "bold", paddingRight:2,}}>
-  {username || "User"}
-</Typography>
- {/* <IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
+                <Typography sx={{ ml: 2, fontWeight: "bold", paddingRight: 2 }}>
+                  {username || "User"}
+                </Typography>
+                {/* <IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
   <Avatar
     sx={{
       bgcolor: "#757a7bff",
@@ -268,40 +285,47 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
     {username ? username.charAt(0) : "U"}
   </Avatar>
 </IconButton> */}
-<IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
-  <Avatar
-    sx={{
-      bgcolor: "#0b162b",
-      color: "#ffffffff",
-      border: "2px solid #0b162b",
-      width: 40,
-      height: 40,
-      position: "relative",
-      fontWeight: "bold",
-      fontSize: "16px",
-      textTransform: "uppercase",
-    }}
-  >
-    
-    <PersonIcon
-      sx={{
-        position: "absolute",
-        opacity: 0.15,
-        fontSize: 28,
-        color: "#0b162b",
-      }}
-    />
-    
-    {username ? username.charAt(0) : "U"}
-  </Avatar>
-</IconButton>
+                <IconButton
+                  onClick={handleAccountMenu}
+                  color="inherit"
+                  sx={{ p: 0 }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: "#0b162b",
+                      color: "#ffffffff",
+                      border: "2px solid #0b162b",
+                      width: 40,
+                      height: 40,
+                      position: "relative",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    <PersonIcon
+                      sx={{
+                        position: "absolute",
+                        opacity: 0.15,
+                        fontSize: 28,
+                        color: "#0b162b",
+                      }}
+                    />
+
+                    {username ? username.charAt(0) : "U"}
+                  </Avatar>
+                </IconButton>
                 <Menu
                   anchorEl={accountAnchorEl}
                   open={Boolean(accountAnchorEl)}
                   onClose={handleAccountClose}
-                  PaperProps={{ sx: { bgcolor: "rgba(11,22,43)", color: "white" } }}
+                  PaperProps={{
+                    sx: { bgcolor: "rgba(11,22,43)", color: "white" },
+                  }}
                 >
-                  <MenuItem onClick={handleOpenPasswordDialog}>تغيير كلمة المرور</MenuItem>
+                  <MenuItem onClick={handleOpenPasswordDialog}>
+                    تغيير كلمة المرور
+                  </MenuItem>
                   <MenuItem onClick={handleLogout}>تسجيل الخروج</MenuItem>
                 </Menu>
               </Box>
@@ -331,85 +355,86 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
 
       {/*  Dialog تغيير كلمة المرور */}
       <Dialog
-  open={openPasswordDialog}
-  onClose={handleClosePasswordDialog}
-  TransitionComponent={Grow}
-  transitionDuration={300}
-  PaperProps={{
-    sx: {
-      borderRadius: 3,
-      p: 2,
-      bgcolor: "#0e1d3a",
-      color: "white",
-      textAlign: "center",
-      width: 420,
-    },
-  }}
-  BackdropProps={{
-    sx: { backdropFilter: "blur(6px)" },
-  }}
->
-  <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>
-    تغيير كلمة المرور
-  </DialogTitle>
-
-  <form
-    onSubmit={handleSubmit(async (data) => {
-      await handleChangePassword(data);
-      handleClosePasswordDialog();
-      reset();
-    })}
-  >
-    <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-      <TextField
-        label="كلمة المرور الحالية"
-        type="password"
-        fullWidth
-        {...register("currentPassword")}
-        error={!!errors.currentPassword}
-        helperText={errors.currentPassword?.message}
-        sx={{
-          input: { color: "white" },
-          label: { color: "#aaa" },
-          "& .MuiFormHelperText-root": { color: "#f87171" },
+        open={openPasswordDialog}
+        onClose={handleClosePasswordDialog}
+        TransitionComponent={Grow}
+        transitionDuration={300}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            bgcolor: "#0e1d3a",
+            color: "white",
+            textAlign: "center",
+            width: 420,
+          },
         }}
-      />
-
-      <TextField
-        label="كلمة المرور الجديدة"
-        type="password"
-        fullWidth
-        {...register("newPassword")}
-        error={!!errors.newPassword}
-        helperText={errors.newPassword?.message}
-        sx={{
-          input: { color: "white" },
-          label: { color: "#aaa" },
-          "& .MuiFormHelperText-root": { color: "#f87171" },
-        }}
-      />
-    </DialogContent>
-
-    <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-      <Button onClick={handleClosePasswordDialog} sx={{ color: "#aaa" }}>
-        إلغاء
-      </Button>
-      <Button
-        type="submit"
-        variant="outlined"
-        disabled={changingPassword}
-        sx={{
-          color: "#4caf50",
-          borderColor: "#4caf50",
-          "&:hover": { backgroundColor: "#1b5e20", color: "white" },
+        BackdropProps={{
+          sx: { backdropFilter: "blur(6px)" },
         }}
       >
-        {changingPassword ? "جاري التغيير..." : "حفظ"}
-      </Button>
-    </DialogActions>
-  </form>
-</Dialog>
+        <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>
+          تغيير كلمة المرور
+        </DialogTitle>
 
+        <form
+          onSubmit={handleSubmit(async (data) => {
+            await handleChangePassword(data);
+            handleClosePasswordDialog();
+            reset();
+          })}
+        >
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+          >
+            <TextField
+              label="كلمة المرور الحالية"
+              type="password"
+              fullWidth
+              {...register("currentPassword")}
+              error={!!errors.currentPassword}
+              helperText={errors.currentPassword?.message}
+              sx={{
+                input: { color: "white" },
+                label: { color: "#aaa" },
+                "& .MuiFormHelperText-root": { color: "#f87171" },
+              }}
+            />
+
+            <TextField
+              label="كلمة المرور الجديدة"
+              type="password"
+              fullWidth
+              {...register("newPassword")}
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message}
+              sx={{
+                input: { color: "white" },
+                label: { color: "#aaa" },
+                "& .MuiFormHelperText-root": { color: "#f87171" },
+              }}
+            />
+          </DialogContent>
+
+          <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+            <Button onClick={handleClosePasswordDialog} sx={{ color: "#aaa" }}>
+              إلغاء
+            </Button>
+            <Button
+              type="submit"
+              variant="outlined"
+              disabled={changingPassword}
+              sx={{
+                color: "#4caf50",
+                borderColor: "#4caf50",
+                "&:hover": { backgroundColor: "#1b5e20", color: "white" },
+              }}
+            >
+              {changingPassword ? "جاري التغيير..." : "حفظ"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
       {/*  Dialog إعادة تسمية المحادثة */}
       <Dialog
@@ -431,9 +456,13 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
           sx: { backdropFilter: "blur(6px)" },
         }}
       >
-        <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>إعادة تسمية المحادثة</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold", color: "#90caf9" }}>
+          إعادة تسمية المحادثة
+        </DialogTitle>
 
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+        >
           <TextField
             label="الاسم الجديد"
             fullWidth
@@ -452,7 +481,10 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
         </DialogContent>
 
         <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button onClick={() => setRenameDialogOpen(false)} sx={{ color: "#aaa" }}>
+          <Button
+            onClick={() => setRenameDialogOpen(false)}
+            sx={{ color: "#aaa" }}
+          >
             إلغاء
           </Button>
           <Button
@@ -484,7 +516,14 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
         anchor="right"
         open={open}
       >
-        <Box sx={{ display: "flex", alignItems: "center", p: 1, borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: 1,
+            borderBottom: "1px solid rgba(255,255,255,0.2)",
+          }}
+        >
           <IconButton onClick={handleDrawerClose}>
             <ChevronRightIcon sx={{ color: "white" }} />
           </IconButton>
@@ -493,7 +532,14 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
 
-        <Box sx={{ display: "flex", alignItems: "center", p: 1.5, justifyContent: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: 1.5,
+            justifyContent: "center",
+          }}
+        >
           <Button
             sx={{
               backgroundColor: " #1E3A8A",
@@ -520,8 +566,12 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
               bgcolor: "rgba(255,255,255,0.1)",
               borderRadius: "8px",
               input: { color: "white" },
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.2)" },
-              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#00bcd4" },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.2)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#00bcd4",
+              },
             }}
             onChange={async (e) => {
               const query = e.target.value;
@@ -554,162 +604,196 @@ const [sessionToDelete, setSessionToDelete] = useState(null);
               <Typography variant="body2" sx={{ color: "white" }}>
                 اخر ظهور:{" "}
                 {userStats.lastActivity
-                  ? `${new Date(userStats.lastActivity).toLocaleDateString("ar-EG")}-${new Date(
-                      userStats.lastActivity
-                    ).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}`
+                  ? (() => {
+                      const date = new Date(userStats.lastActivity);
+                      date.setHours(date.getHours() + 3); // إضافة 3 ساعات
+                      return `${date.toLocaleDateString(
+                        "ar-EG"
+                      )} - ${date.toLocaleTimeString("ar-EG", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`;
+                    })()
                   : "غير متاح"}
               </Typography>
             </Box>
           )}
         </Box>
 
-        {searchResults.length > 0 && (
-          <List sx={{ maxHeight: 200, overflow: "auto", mt: 1 }}>
-            {searchResults.map((msg) => (
-              <ListItem key={msg.id} divider>
+        {searchResults.map((msg) => (
+          <ListItem
+            key={msg.id}
+            divider
+            button
+            onClick={() => {
+              // تخزين الجلسة الحالية
+              localStorage.setItem("currentSessionId", msg.chatSessionId);
+              // إرسال حدث لتحديث الصفحة الرئيسية
+              window.dispatchEvent(new Event("sessionSelected"));
+              // إغلاق القائمة الجانبية
+              handleDrawerClose();
+              // تنظيف البحث
+              setSearchQuery("");
+              setSearchResults([]);
+            }}
+            sx={{
+              "&:hover": {
+                backgroundColor: "rgba(0,188,212,0.15)",
+                cursor: "pointer",
+              },
+            }}
+          >
+            <ListItemText
+              primary={`${
+                msg.content.length > 60
+                  ? msg.content.slice(0, 60) + "..."
+                  : msg.content
+              }`}
+              secondary={`في الجلسة: ${msg.sessionTitle || msg.chatSessionId}`}
+              primaryTypographyProps={{ color: "#fff" }}
+              secondaryTypographyProps={{ color: "#aaa" }}
+            />
+          </ListItem>
+        ))}
+
+        <List>
+          {filteredSessions.map((session, index) => {
+            const currentSessionId = Number(
+              localStorage.getItem("currentSessionId")
+            );
+            return (
+              <ListItem
+                key={session.id}
+                selected={session.id === currentSessionId}
+                divider
+                sx={{
+                  direction: "rtl",
+                  justifyContent: "space-between",
+                  textAlign: "right",
+                  position: "relative",
+                  "&:hover": {
+                    cursor: "pointer",
+                    backgroundColor: "rgba(0,188,212,0.15)",
+                  },
+                  "&:hover .actions": {
+                    opacity: 1,
+                    transform: "translateX(0)",
+                  },
+                }}
+              >
                 <ListItemText
-                  primary={msg.content}
-                  secondary={`في الجلسة: ${msg.sessionTitle || msg.sessionId}`}
-                  primaryTypographyProps={{ color: "#fff" }}
-                  secondaryTypographyProps={{ color: "#aaa" }}
+                  primary={session.title || `محادثة ${index + 1}`}
+                  onClick={() => {
+                    localStorage.setItem("currentSessionId", session.id);
+                    window.dispatchEvent(new Event("sessionSelected"));
+                    handleDrawerClose();
+                  }}
                 />
+
+                {/* مجموعة الأيقونات */}
+                <Box
+                  className="actions"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    opacity: 0,
+                    transform: "translateX(10px)",
+                    transition: "opacity 0.3s ease, transform 0.3s ease",
+                  }}
+                >
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadSession(session.id);
+                    }}
+                    title="تحميل PDF"
+                    sx={{ color: "#ffffffff" }}
+                  >
+                    <FileDownloadIcon fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    edge="end"
+                    sx={{ color: "#ffffffff" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRenameSession(session.id, session.title);
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    edge="end"
+                    sx={{ color: "#ffffffff" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSessionToDelete(session.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </ListItem>
-            ))}
-          </List>
-        )}
-
-       <List>
-  {filteredSessions.map((session, index) => {
-    const currentSessionId = Number(localStorage.getItem("currentSessionId"));
-    return (
-      <ListItem
-        key={session.id}
-        selected={session.id === currentSessionId}
-        divider
-        sx={{
-          direction: "rtl",
-          justifyContent: "space-between",
-          textAlign: "right",
-          position: "relative",
-          "&:hover": { cursor: "pointer", backgroundColor: "rgba(0,188,212,0.15)" },
-          "&:hover .actions": {
-            opacity: 1,
-            transform: "translateX(0)",
-          },
-        }}
-      >
-        <ListItemText
-          primary={session.title || `محادثة ${index + 1}`}
-          onClick={() => {
-            localStorage.setItem("currentSessionId", session.id);
-            window.dispatchEvent(new Event("sessionSelected"));
-            handleDrawerClose();
+            );
+          })}
+        </List>
+        {/* Dialog تأكيد الحذف */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          TransitionComponent={Grow}
+          transitionDuration={300}
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              p: 2,
+              bgcolor: "#0e1d3a",
+              color: "white",
+              textAlign: "center",
+              width: 380,
+            },
           }}
-        />
-
-        {/* مجموعة الأيقونات */}
-        <Box
-          className="actions"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            opacity: 0,
-            transform: "translateX(10px)",
-            transition: "opacity 0.3s ease, transform 0.3s ease",
+          BackdropProps={{
+            sx: { backdropFilter: "blur(6px)" },
           }}
         >
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDownloadSession(session.id);
-            }}
-            title="تحميل PDF"
-            sx={{ color: "#ffffffff" }}
-          >
-            <FileDownloadIcon fontSize="small" />
-          </IconButton>
+          <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
+            تأكيد الحذف
+          </DialogTitle>
 
-          <IconButton
-            edge="end"
-            sx={{ color: "#ffffffff" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRenameSession(session.id, session.title);
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
+          <DialogContent sx={{ mt: 1 }}>
+            <Typography sx={{ color: "white" }}>
+              هل تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.
+            </Typography>
+          </DialogContent>
 
-          <IconButton
-  edge="end"
-  sx={{ color: "#ffffffff" }}
-  onClick={(e) => {
-    e.stopPropagation();
-    setSessionToDelete(session.id);
-    setDeleteDialogOpen(true);
-  }}
->
-  <DeleteIcon fontSize="small" />
-</IconButton>
-
-        </Box>
-      </ListItem>
-    );
-  })}
-</List>
-{/* Dialog تأكيد الحذف */}
-<Dialog
-  open={deleteDialogOpen}
-  onClose={() => setDeleteDialogOpen(false)}
-  TransitionComponent={Grow}
-  transitionDuration={300}
-  PaperProps={{
-    sx: {
-      borderRadius: 3,
-      p: 2,
-      bgcolor: "#0e1d3a",
-      color: "white",
-      textAlign: "center",
-      width: 380,
-    },
-  }}
-  BackdropProps={{
-    sx: { backdropFilter: "blur(6px)" },
-  }}
->
-  <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
-    تأكيد الحذف
-  </DialogTitle>
-
-  <DialogContent sx={{ mt: 1 }}>
-    <Typography sx={{ color: "white" }}>
-      هل تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.
-    </Typography>
-  </DialogContent>
-
-  <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-    <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: "#aaa" }}>
-      إلغاء
-    </Button>
-    <Button
-      variant="outlined"
-      onClick={async () => {
-        await deleteSession(sessionToDelete);
-        await fetchAllSessions();
-        setDeleteDialogOpen(false);
-      }}
-      sx={{
-        color: "#ef4444",
-        borderColor: "#ef4444",
-        "&:hover": { backgroundColor: "#b91c1c", color: "white" },
-      }}
-    >
-      حذف
-    </Button>
-  </DialogActions>
-</Dialog>
-
+          <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{ color: "#aaa" }}
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                await deleteSession(sessionToDelete);
+                await fetchAllSessions();
+                setDeleteDialogOpen(false);
+              }}
+              sx={{
+                color: "#ef4444",
+                borderColor: "#ef4444",
+                "&:hover": { backgroundColor: "#b91c1c", color: "white" },
+              }}
+            >
+              حذف
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Drawer>
     </>
   );
