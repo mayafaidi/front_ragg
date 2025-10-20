@@ -6,6 +6,10 @@ import { useChat } from "../../context/ChatContext";
 import CircularProgress from "@mui/material/CircularProgress";
 import Footer from "../../component/footer/Footer";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -295,9 +299,131 @@ export default function Home() {
                     },
                   }}
                 >
-                  <Typography sx={{ fontSize: "16px", lineHeight: 1.5 }}>
-                    {msg.text}
-                  </Typography>
+              <Box
+  sx={{
+    direction: /[\u0600-\u06FF]/.test(msg.text) ? "rtl" : "ltr",
+    textAlign: /[\u0600-\u06FF]/.test(msg.text) ? "right" : "left",
+    fontFamily: "'Cairo', sans-serif",
+    fontSize: "16px",
+    lineHeight: 1.7,
+    whiteSpace: "pre-wrap",
+  }}
+>
+  <ReactMarkdown
+    children={msg.text}
+    components={{
+      p: ({ node, ...props }) => (
+        <Typography
+          sx={{
+            fontSize: "16px",
+            lineHeight: 1.6,
+            direction: /[\u0600-\u06FF]/.test(msg.text) ? "rtl" : "ltr",
+            textAlign: /[\u0600-\u06FF]/.test(msg.text) ? "right" : "left",
+          }}
+          {...props}
+        />
+      ),
+
+      // 🔗 الروابط القابلة للنقر
+      a: ({ node, ...props }) => (
+        <a
+          {...props}
+          href={props.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "#00BCD4",
+            textDecoration: "underline",
+            wordBreak: "break-all",
+            transition: "0.3s",
+          }}
+          onMouseOver={(e) => (e.target.style.color = "#4DD0E1")}
+          onMouseOut={(e) => (e.target.style.color = "#00BCD4")}
+        >
+          {props.children}
+        </a>
+      ),
+
+      // 🧾 الجداول (تنسيق احترافي)
+      table: ({ node, ...props }) => (
+        <Box
+          sx={{
+            overflowX: "auto",
+            border: "1px solid rgba(255,255,255,0.2)",
+            borderRadius: "8px",
+            my: 1.5,
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              direction: "rtl",
+              textAlign: "center",
+              fontSize: "15px",
+              color: "white",
+            }}
+            {...props}
+          />
+        </Box>
+      ),
+      th: ({ node, ...props }) => (
+        <th
+          style={{
+            borderBottom: "1px solid rgba(255,255,255,0.3)",
+            padding: "8px",
+            fontWeight: "bold",
+            backgroundColor: "rgba(255,255,255,0.08)",
+          }}
+          {...props}
+        />
+      ),
+      td: ({ node, ...props }) => (
+        <td
+          style={{
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            padding: "8px",
+          }}
+          {...props}
+        />
+      ),
+
+      // 💡 الأكواد الملوّنة
+      code({ node, inline, className, children, ...props }) {
+        const match = /language-(\w+)/.exec(className || "");
+        return !inline && match ? (
+          <SyntaxHighlighter
+            {...props}
+            style={oneDark}
+            language={match[1]}
+            PreTag="div"
+          >
+            {String(children).replace(/\n$/, "")}
+          </SyntaxHighlighter>
+        ) : (
+          <Typography
+            component="code"
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.1)",
+              padding: "2px 4px",
+              borderRadius: "4px",
+              fontFamily: "monospace",
+              fontSize: "15px",
+              display: "inline-block",
+            }}
+            {...props}
+          >
+            {children}
+          </Typography>
+        );
+      },
+    }}
+  />
+</Box>
+
+
+
+
                   {msg.time && (
                     <Typography
                       sx={{ fontSize: "12px", color: "gray", mt: 0.5 }}
