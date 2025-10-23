@@ -41,6 +41,7 @@ import DialogActions from "@mui/material/DialogActions";
 import { useChat } from "../../context/ChatContext";
 import Avatar from "@mui/material/Avatar";
 import PersonIcon from "@mui/icons-material/Person";
+import {jwtDecode}  from "jwt-decode";
 
 const drawerWidth = 280;
 
@@ -81,7 +82,10 @@ const passwordSchema = yup.object().shape({
       "يجب أن تختلف كلمة المرور الجديدة عن الحالية"
     ),
 });
-
+const token=localStorage.getItem('token');
+const decoded=jwtDecode(token);
+const username = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+localStorage.setItem('username',username)
 export default function MenuAppBar({
   open,
   handleDrawerOpen,
@@ -263,7 +267,7 @@ const getCategoryIcon = (name) => {
   };
 
   useEffect(() => {
-    const storedName = localStorage.getItem("usrname");
+    const storedName = localStorage.getItem("username");
     if (storedName) setUsername(storedName);
   }, []);
   useEffect(() => {

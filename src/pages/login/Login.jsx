@@ -15,7 +15,6 @@ import * as yup from "yup";
 import "aos/dist/aos.css";
 import axios from "axios";
 import AOS from "aos";
-
 import style from "./Login.module.css";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,9 +54,8 @@ export default function Login() {
         "https://localhost:7017/api/Accounts/Login",
         data
       );
-      console.log(response.data.data);
-      localStorage.setItem("token", response.data.data.token);
-      localStorage.setItem("usrname", response.data.data.username);
+     
+
       toast.success(
         <Typography sx={{ color: "#1E3A8A", fontWeight: "bold" }}>
           {response.data.message}
