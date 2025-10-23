@@ -9,7 +9,15 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
+const majorName ={
+MIS: " أنظمة المعلومات الإدارية",
+ CS: "علم الحاسوب",
+  CSec: " الأمن السيبراني",
+  CAP: "علم الحاسوب في سوق العمل ",
+  CAP_SW: " علم الحاسوب تركيز برمجيات",
+  CAP_AI: "علم الحاسوب تركيز الذكاء الاصطناعي ",
+  General: " عام", // 👈 اختياري في حال المستخدم ما اختار تخصص
+};
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -37,17 +45,19 @@ export default function Home() {
       );
 
       const data = await response.json();
-
+console.log(data);
       const msgs = data?.data?.messages?.map((m, idx) => ({
-        id: m.id ?? `srv-${idx}`,
-        sender: m.role === "user" ? "user" : "bot",
-        text: m.content,
-        isTyping: false,
-        time: m.createdAt
-          ? new Date(
-              new Date(m.createdAt).getTime() + 3 * 60 * 60 * 1000
-            ).toLocaleTimeString("EG", { hour: "2-digit", minute: "2-digit" })
-          : null,
+  id: m.id ?? `srv-${idx}`,
+  sender: m.role === "user" ? "user" : "bot",
+  text: m.content,
+  major: majorName[m.major] || m.major || "غير معروف",
+
+  isTyping: false,
+  time: m.createdAt
+    ? new Date(
+        new Date(m.createdAt).getTime() + 3 * 60 * 60 * 1000
+      ).toLocaleTimeString("EG", { hour: "2-digit", minute: "2-digit" })
+    : null,
       })) || [
         {
           id: "welcome",
@@ -104,7 +114,8 @@ export default function Home() {
 
     const token = localStorage.getItem("token");
     const sessionId = localStorage.getItem("currentSessionId");
-    const major = localStorage.getItem("currentSpecialty") || "General";
+const majorCode = localStorage.getItem("currentSpecialty") || "General";
+const major = majorName[majorCode] || majorCode || "غير معروف";
     if (!token || !sessionId) return;
     //هدول عشان يكتب لبتيجي
     const userMsg = {
@@ -112,6 +123,7 @@ export default function Home() {
       sender: "user",
       text: input,
       isTyping: false,
+      major: major,
     };
     const typingId = `typing-${Date.now()}`;
     const typingMsg = {
@@ -144,7 +156,7 @@ export default function Home() {
             sessionId: Number(sessionId),
             role: "user",
             content: userMsg.text,
-            major,
+             major: majorCode,
           }),
         }
       );
@@ -206,6 +218,13 @@ export default function Home() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+useEffect(() => {
+  const savedMajorCode = localStorage.getItem("currentSpecialty") || "General";
+  const fullMajor = majorName[savedMajorCode] || savedMajorCode || "غير معروف";
+  
+  // نحفظه مؤقتًا في state أو نطبعه للتأكد
+  console.log("📘 التخصص الحالي:", fullMajor);
+}, []);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -299,6 +318,21 @@ export default function Home() {
                     },
                   }}
                 >
+                  {msg.sender === "user" && msg.major && (
+    <Typography
+      sx={{
+        fontSize: "13px",
+        fontWeight: "bold",
+        color: "#00BCD4",
+        mb: 0.5,
+        textAlign: "right",
+borderBottom: "1px solid", 
+pb:"4px",
+      }}
+    >
+      {msg.major}
+    </Typography>
+  )}
               <Box
   sx={{
     direction: /[\u0600-\u06FF]/.test(msg.text) ? "rtl" : "ltr",
