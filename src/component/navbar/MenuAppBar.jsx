@@ -6,6 +6,8 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -124,6 +126,69 @@ export default function MenuAppBar({
   const [renameSessionId, setRenameSessionId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
+// 🔔 إعلانات زاجل
+const [zajelAnchorEl, setZajelAnchorEl] = useState(null);
+const [subAnchorEl, setSubAnchorEl] = useState(null);
+const [selectedCategory, setSelectedCategory] = useState(null);
+const [zajelCategories, setZajelCategories] = useState([]);
+const [hasNew, setHasNew] = useState(false);
+
+useEffect(() => {
+  fetch("http://127.0.0.1:8000/api/zajel")
+    .then((res) => res.json())
+    .then((data) => {
+      setZajelCategories(data.data || []);
+      // 🔴 تحقق إذا في أي مقالة جديدة
+      const hasNewArticle = data.data?.some((cat) =>
+        cat.articles?.some((a) => a.is_new)
+      );
+      setHasNew(hasNewArticle);
+    })
+    .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
+}, []);
+
+
+const handleOpenZajel = (e) => setZajelAnchorEl(e.currentTarget);
+const handleCloseZajel = () => {
+  setZajelAnchorEl(null);
+  setSubAnchorEl(null);
+};
+// 🟢 فتح القوائم
+const handleOpenMainMenu = (event) => {
+  setAnchorEl(event.currentTarget);
+};
+
+const handleCloseMainMenu = () => {
+  // ننتظر قليل قبل الإغلاق حتى لا تختفي عند الانتقال للقائمة الفرعية
+  setTimeout(() => {
+    setAnchorEl(null);
+    setSubAnchorEl(null);
+  }, 200);
+};
+
+const handleOpenSubMenu = (event, category) => {
+  setSelectedCategory(category);
+  setSubAnchorEl(event.currentTarget);
+};
+
+const handleCloseSubMenu = () => {
+  setTimeout(() => {
+    setSubAnchorEl(null);
+  }, 200);
+};
+
+const handleOpenSub = (e, cat) => {
+  setSelectedCategory(cat);
+  setSubAnchorEl(e.currentTarget);
+};
+const handleCloseSub = () => setSubAnchorEl(null);
+
+const getCategoryIcon = (name) => {
+  if (name.includes("هامة")) return "📢";
+  if (name.includes("عامة")) return "📰";
+  if (name.includes("دورات")) return "🎓";
+  return "📁";
+};
 
   // Account Menu handlers
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
@@ -346,6 +411,157 @@ export default function MenuAppBar({
           >
             Askly
           </Typography>
+{/* 🔔 زر إعلانات زاجل */}
+{/* 🔔 زر إعلانات زاجل */}
+<Box sx={{ position: "relative", ml: 2 }}>
+  <Button
+    sx={{
+      color: "white",
+      fontFamily: "Cairo",
+      fontWeight: "bold",
+      fontSize: "1rem",
+      backgroundColor: "#6b0f1a",
+      "&:hover": { backgroundColor: "#8b1f2b" },
+      // borderRadius: "8px",
+      px: 2,
+      transition: "all 0.3s ease",
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      position: "relative",
+    }}
+    endIcon={<ArrowDropDownIcon />}
+    onClick={(e) =>
+      setZajelAnchorEl(zajelAnchorEl ? null : e.currentTarget)
+    }
+  >
+    🔔 إعلانات زاجل
+  </Button>
+
+  {hasNew && (
+    <Box
+      sx={{
+        position: "absolute",
+        top: "-4px",
+        left: "-8px", // 👈 أقصى اليسار
+        width: 12,
+        height: 12,
+        bgcolor: "red",
+        borderRadius: "50%",
+        boxShadow: "0 0 6px red",
+        animation: "pulse 1.5s infinite",
+        "@keyframes pulse": {
+          "0%": { transform: "scale(1)", opacity: 1 },
+          "50%": { transform: "scale(1.3)", opacity: 0.6 },
+          "100%": { transform: "scale(1)", opacity: 1 },
+        },
+      }}
+    />
+  )}
+
+  {/* القائمة الأولى للفئات */}
+  {zajelAnchorEl && (
+    <Menu
+      anchorEl={zajelAnchorEl}
+      open={Boolean(zajelAnchorEl)}
+      onClose={() => {
+        setZajelAnchorEl(null);
+        setSubAnchorEl(null);
+      }}
+      MenuListProps={{
+        sx: {
+          backgroundColor: "#1a1e9fff",
+          color: "#333",
+          fontFamily: "Cairo",
+          borderRadius: "10px",
+          // border: "1px solid #ddd",
+          textAlign: "right",
+          direction: "rtl",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+        },
+      }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+    >
+      {zajelCategories.map((cat) => (
+        <MenuItem
+          key={cat.category_id}
+          onClick={(e) => {
+            setSelectedCategory(cat);
+            setSubAnchorEl(e.currentTarget);
+          }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            minWidth: "230px",
+            transition: "background-color 0.2s ease"
+            // "&:hover": { backgroundColor: "#f2f2f2" },
+          }}
+        >
+          <span>{cat.category_name}</span>
+          <span>{getCategoryIcon(cat.category_name)}</span>
+        </MenuItem>
+      ))}
+    </Menu>
+  )}
+
+  {/* القائمة الفرعية للمقالات */}
+  {subAnchorEl && (
+    <Menu
+      anchorEl={subAnchorEl}
+      open={Boolean(subAnchorEl)}
+      onClose={() => setSubAnchorEl(null)}
+      MenuListProps={{
+        sx: {
+          backgroundColor: "#1a1e9fff",
+          color: "#ffffffff",
+          fontFamily: "Cairo",
+          borderRadius: "10px",
+          // border: "1px solid #ddd",
+          textAlign: "right",
+          direction: "rtl",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+        },
+      }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      transformOrigin={{ vertical: "top", horizontal: "left" }}
+    >
+      {selectedCategory?.articles?.map((article, index) => (
+        <Box key={index}>
+          <MenuItem
+            component="a"
+            href={article.link}
+            target="_blank"
+            onClick={() => setSubAnchorEl(null)}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "10px",
+              minWidth: "320px",
+              transition: "background-color 0.2s ease"
+              // "&:hover": { backgroundColor: "#f0f0f0" },
+            }}
+          >
+            {article.title}
+            {article.is_new && (
+              <span style={{ color: "crimson", fontSize: "0.8rem" }}>جديد</span>
+            )}
+          </MenuItem>
+          {index < selectedCategory.articles.length - 1 && (
+            <Divider sx={{ my: 0.5 }} />
+          )}
+        </Box>
+      ))}
+    </Menu>
+  )}
+</Box>
+
+
+
+
+
+
+
 
           <IconButton color="inherit" edge="end" onClick={handleDrawerOpen}>
             <MenuIcon />

@@ -29,6 +29,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true); // لتحميل الصفحة فقط (مش للإرسال)
   const [copiedId, setCopiedId] = useState(null); //هاي عشان اشارة الكوبي
   const messagesEndRef = React.useRef(null);
+const [botTyping, setBotTyping] = useState(false);
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
@@ -111,111 +112,144 @@ console.log(data);
     }
   };
 
-  // إرسال رسالة
-  const handleSend = async () => {
-    if (!input.trim() || sending) return;
+ const handleSend = async () => {
+  if (!input.trim() || sending) return;
 
-    const token = localStorage.getItem("token");
-    const sessionId = localStorage.getItem("currentSessionId");
-const majorCode = localStorage.getItem("currentSpecialty") || "General";
-const major = majorName[majorCode] || majorCode || "غير معروف";
-    if (!token || !sessionId) return;
-    //هدول عشان يكتب لبتيجي
-    const userMsg = {
-      id: `u-${Date.now()}`,
-      sender: "user",
-      text: input,
-      isTyping: false,
-      major: major,
-    };
-    const typingId = `typing-${Date.now()}`;
-    const typingMsg = {
-      id: typingId,
-      sender: "bot",
-      text: "يكتب…",
-      isTyping: true,
-    };
+  const token = localStorage.getItem("token");
+  const sessionId = localStorage.getItem("currentSessionId");
+  const majorCode = localStorage.getItem("currentSpecialty") || "General";
+  const major = majorName[majorCode] || majorCode || "غير معروف";
 
-    setMessages((prev) => [...prev, userMsg, typingMsg]);
+  if (!token || !sessionId) return;
 
-    userMsg.time = new Date().toLocaleTimeString("EG", {
-      hour: "2-digit",
-      minute: "2-digit",
+  // 🟢 رسالة المستخدم
+  const userMsg = {
+    id: `u-${Date.now()}`,
+    sender: "user",
+    text: input,
+    isTyping: false,
+    major: major,
+  };
+
+  const typingId = `typing-${Date.now()}`;
+  const typingMsg = {
+    id: typingId,
+    sender: "bot",
+    text: "يكتب…",
+    isTyping: true,
+  };
+
+  setMessages((prev) => [...prev, userMsg, typingMsg]);
+
+  userMsg.time = new Date().toLocaleTimeString("EG", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  setInput("");
+  setSending(true);
+
+  try {
+    const response = await fetch("https://localhost:7017/api/Chats/send-message", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessionId: Number(sessionId),
+        role: "user",
+        content: userMsg.text,
+        major: majorCode,
+      }),
     });
 
-    setInput("");
-    setSending(true);
+    const data = await response.json();
+    const botMsg = data?.data;
 
-    try {
-      const response = await fetch(
-        "https://localhost:7017/api/Chats/send-message",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            sessionId: Number(sessionId),
-            role: "user",
-            content: userMsg.text,
-             major: majorCode,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      const botMsg = data?.data;
-      // console.log(botMsg)
+    if (botMsg && botMsg.content) {
+      const fullText = botMsg.content;
       const serverTime = new Date(botMsg.createdAt);
-      const localTime = new Date(serverTime.getTime() + 3 * 60 * 60 * 1000); // +3 ساعات
+      const localTime = new Date(serverTime.getTime() + 3 * 60 * 60 * 1000);
       const displayTime = localTime.toLocaleTimeString("EG", {
         hour: "2-digit",
         minute: "2-digit",
       });
-      console.log(data);
-      if (botMsg && botMsg.content) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === typingId
-              ? {
-                  id: `b-${Date.now()}`,
-                  sender: "bot",
-                  text: botMsg.content,
-                  isTyping: false,
-                  time: botMsg.createdAt
-                    ? new Date(botMsg.createdAt).toLocaleTimeString("EG", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : null,
-                }
-              : m
-          )
-        );
-      } else {
-        // لو الرد غير متوقّع، احذف فقاعة "يكتب…"
-        setMessages((prev) => prev.filter((m) => m.id !== typingId));
-      }
-    } catch (error) {
-      console.error("فشل إرسال الرسالة:", error);
-      // 4) في حالة الخطأ، احذف فقاعة "يكتب…"
-      setMessages((prev) => prev.filter((m) => m.id !== typingId));
-    } finally {
-      setSending(false);
-    }
-  };
-  //عشان اشارة الكوبي لبتطلع بكل مسج
 
-  const handleCopy = async (text, id) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error("فشل النسخ:", err);
+      let currentText = "";
+      const botMessageId = `b-${Date.now()}`;
+
+      // أضيف رسالة بوت فاضية كبداية
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === typingId
+            ? {
+                id: botMessageId,
+                sender: "bot",
+                text: "",
+                isTyping: false,
+                isStreaming: true,
+                time: displayTime,
+              }
+            : m
+        )
+      );
+
+      // ⚡ إعدادات سرعة الكتابة (سريعة جدًا وديناميكية)
+      const chunkSize = 8;   // كل مرة يضيف 8 أحرف
+      const delay = 1;       // تأخير شبه معدوم لسرعة فورية تقريبًا
+      let index = 0;
+      let lastTime = 0;
+
+      const typeEffect = (timestamp) => {
+        if (index < fullText.length) {
+          if (!lastTime || timestamp - lastTime >= delay) {
+            currentText += fullText.slice(index, index + chunkSize);
+            index += chunkSize;
+            lastTime = timestamp;
+
+            // تحديث النص بشكل ديناميكي وسلس
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === botMessageId ? { ...m, text: currentText } : m
+              )
+            );
+          }
+
+          requestAnimationFrame(typeEffect);
+        } else {
+          // ✅ انتهى العرض بالكامل
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMessageId ? { ...m, isStreaming: false } : m
+            )
+          );
+
+          setBotTyping(false);
+          setSending(false);
+        }
+      };
+
+      // 🚀 بدء الكتابة السريعة الديناميكية
+      requestAnimationFrame(typeEffect);
     }
-  };
+  } catch (error) {
+    console.error("فشل إرسال الرسالة:", error);
+    setMessages((prev) => prev.filter((m) => m.id !== typingId));
+  }
+};
+
+// 📋 دالة النسخ
+const handleCopy = async (text, id) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  } catch (err) {
+    console.error("فشل النسخ:", err);
+  }
+};
+
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -433,6 +467,7 @@ pb:"4px",
 
             <IconButton
               onClick={handleSend}
+                disabled={sending || botTyping}
               sx={{
                 bgcolor: "#1e3982ff",
                 color: "white",
@@ -444,7 +479,7 @@ pb:"4px",
                 },
               }}
             >
-              {sending ? (
+              {sending||botTyping ? (
                 <CircularProgress size={24} sx={{ color: "white" }} />
               ) : (
                 <SendIcon />
