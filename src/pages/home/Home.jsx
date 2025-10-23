@@ -18,6 +18,9 @@ MIS: " أنظمة المعلومات الإدارية",
   CAP_AI: "علم الحاسوب تركيز الذكاء الاصطناعي ",
   General: " عام", // 👈 اختياري في حال المستخدم ما اختار تخصص
 };
+import Markdown from "react-markdown";
+import StyledMarkdown from "../../StyleMarkDown";
+
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -163,6 +166,7 @@ const major = majorName[majorCode] || majorCode || "غير معروف";
 
       const data = await response.json();
       const botMsg = data?.data;
+      // console.log(botMsg)
       const serverTime = new Date(botMsg.createdAt);
       const localTime = new Date(serverTime.getTime() + 3 * 60 * 60 * 1000); // +3 ساعات
       const displayTime = localTime.toLocaleTimeString("EG", {
@@ -343,116 +347,7 @@ pb:"4px",
     whiteSpace: "pre-wrap",
   }}
 >
-  <ReactMarkdown
-    children={msg.text}
-    components={{
-      p: ({ node, ...props }) => (
-        <Typography
-          sx={{
-            fontSize: "16px",
-            lineHeight: 1.6,
-            direction: /[\u0600-\u06FF]/.test(msg.text) ? "rtl" : "ltr",
-            textAlign: /[\u0600-\u06FF]/.test(msg.text) ? "right" : "left",
-          }}
-          {...props}
-        />
-      ),
-
-      // 🔗 الروابط القابلة للنقر
-      a: ({ node, ...props }) => (
-        <a
-          {...props}
-          href={props.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            color: "#00BCD4",
-            textDecoration: "underline",
-            wordBreak: "break-all",
-            transition: "0.3s",
-          }}
-          onMouseOver={(e) => (e.target.style.color = "#4DD0E1")}
-          onMouseOut={(e) => (e.target.style.color = "#00BCD4")}
-        >
-          {props.children}
-        </a>
-      ),
-
-      // 🧾 الجداول (تنسيق احترافي)
-      table: ({ node, ...props }) => (
-        <Box
-          sx={{
-            overflowX: "auto",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "8px",
-            my: 1.5,
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              direction: "rtl",
-              textAlign: "center",
-              fontSize: "15px",
-              color: "white",
-            }}
-            {...props}
-          />
-        </Box>
-      ),
-      th: ({ node, ...props }) => (
-        <th
-          style={{
-            borderBottom: "1px solid rgba(255,255,255,0.3)",
-            padding: "8px",
-            fontWeight: "bold",
-            backgroundColor: "rgba(255,255,255,0.08)",
-          }}
-          {...props}
-        />
-      ),
-      td: ({ node, ...props }) => (
-        <td
-          style={{
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-            padding: "8px",
-          }}
-          {...props}
-        />
-      ),
-
-      // 💡 الأكواد الملوّنة
-      code({ node, inline, className, children, ...props }) {
-        const match = /language-(\w+)/.exec(className || "");
-        return !inline && match ? (
-          <SyntaxHighlighter
-            {...props}
-            style={oneDark}
-            language={match[1]}
-            PreTag="div"
-          >
-            {String(children).replace(/\n$/, "")}
-          </SyntaxHighlighter>
-        ) : (
-          <Typography
-            component="code"
-            sx={{
-              backgroundColor: "rgba(255,255,255,0.1)",
-              padding: "2px 4px",
-              borderRadius: "4px",
-              fontFamily: "monospace",
-              fontSize: "15px",
-              display: "inline-block",
-            }}
-            {...props}
-          >
-            {children}
-          </Typography>
-        );
-      },
-    }}
-  />
+  <StyledMarkdown msg={msg}/>
 </Box>
 
 

@@ -167,9 +167,6 @@ const handleDownloadSession = async (id) => {
     } catch (error) {
       console.error("خطأ أثناء تحميل الجلسة:", error);
     }
-};
-
-
 
 const getUserStats = async () => {
   try {

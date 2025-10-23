@@ -32,7 +32,7 @@ h1, h2, h3,h4 {
 }
 p, span, a,li {
   font-weight: 400 !important;
-  color: white !important;
+  color: white ;
 }
 body{
   background: linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%) !important;
