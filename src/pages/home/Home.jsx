@@ -327,7 +327,7 @@ useEffect(() => {
       sx={{
         fontSize: "13px",
         fontWeight: "bold",
-        color: "#00BCD4",
+       // color: "#00BCD4",
         mb: 0.5,
         textAlign: "right",
 borderBottom: "1px solid", 
