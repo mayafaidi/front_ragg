@@ -37,55 +37,65 @@ const [botTyping, setBotTyping] = useState(false);
   const { sessions, fetchAllSessions, createSession } = useChat();
 
   // جلب رسائل جلسة معيّنة
-  const fetchMessages = async (sessionId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+ const fetchMessages = async (sessionId) => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `https://localhost:7017/api/Chats/sessions/${sessionId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  try {
+    setLoading(true);
+    const response = await fetch(
+      `https://localhost:7017/api/Chats/sessions/${sessionId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      const data = await response.json();
-console.log(data);
-      const msgs = data?.data?.messages?.map((m, idx) => ({
-  id: m.id ?? `srv-${idx}`,
-  sender: m.role === "user" ? "user" : "bot",
-  text: m.content,
-  major: majorName[m.major] || m.major || "غير معروف",
+    const data = await response.json();
+    const msgs = data?.data?.messages?.map((m, idx) => ({
+      id: m.id ?? `srv-${idx}`,
+      sender: m.role === "user" ? "user" : "bot",
+      text: m.content,
+      major: majorName[m.major] || m.major || "غير معروف",
+      isTyping: false,
+      time: m.createdAt
+        ? new Date(
+            new Date(m.createdAt).getTime() + 3 * 60 * 60 * 1000
+          ).toLocaleTimeString("EG", { hour: "2-digit", minute: "2-digit" })
+        : null,
+    }));
 
-  isTyping: false,
-  time: m.createdAt
-    ? new Date(
-        new Date(m.createdAt).getTime() + 3 * 60 * 60 * 1000
-      ).toLocaleTimeString("EG", { hour: "2-digit", minute: "2-digit" })
-    : null,
-      })) || [
+    // 🟢 إذا ما في رسائل في الجلسة، نضيف الترحيب الديناميكي هون
+    if (!msgs || msgs.length === 0) {
+      const username = localStorage.getItem("username") || "عزيزي الطالب";
+      const majorCode = localStorage.getItem("currentSpecialty") || "General";
+      const major = majorName[majorCode] || "التخصص العام";
+
+      setMessages([
         {
           id: "welcome",
           sender: "bot",
-          text: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
-          isTyping: false,
-        },
-      ];
-
-      setMessages(msgs);
-    } catch (error) {
-      console.error("فشل في جلب الرسائل:", error);
-      setMessages([
-        {
-          id: "empty",
-          sender: "bot",
-          text: "لا توجد رسائل بعد، ابدأ المحادثة",
+          text: `مرحباً ${username}! 👋  
+أنا المساعد الأكاديمي الخاص بك لتخصص **${major}** 🎓  
+كيف يمكنني مساعدتك اليوم؟`,
           isTyping: false,
         },
       ]);
-    } finally {
-      setLoading(false);
+    } else {
+      setMessages(msgs);
     }
-  };
+  } catch (error) {
+    console.error("فشل في جلب الرسائل:", error);
+    setMessages([
+      {
+        id: "empty",
+        sender: "bot",
+        text: "حدث خطأ أثناء تحميل الجلسة.",
+        isTyping: false,
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // إنشاء جلسة جديدة
   const handleCreateSession = async () => {
