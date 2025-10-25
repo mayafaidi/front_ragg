@@ -54,6 +54,9 @@ export default function Login() {
         "https://localhost:7017/api/Accounts/Login",
         data
       );
+      // console.log(response)
+      // console.log()
+      localStorage.setItem('token',response.data.data.token)
      
 
       toast.success(

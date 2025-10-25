@@ -83,9 +83,11 @@ const passwordSchema = yup.object().shape({
     ),
 });
 const token=localStorage.getItem('token');
-const decoded=jwtDecode(token);
-const username = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-localStorage.setItem('username',username)
+if(token){
+  const decoded=jwtDecode(token);
+  const username = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+  localStorage.setItem('username',username)
+}
 export default function MenuAppBar({
   open,
   handleDrawerOpen,
@@ -146,6 +148,7 @@ useEffect(() => {
       const hasNewArticle = data.data?.some((cat) =>
         cat.articles?.some((a) => a.is_new)
       );
+      console.log(data)
       setHasNew(hasNewArticle);
     })
     .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
@@ -421,8 +424,6 @@ const getCategoryIcon = (name) => {
   <Button
     sx={{
       color: "white",
-      fontFamily: "Cairo",
-      fontWeight: "bold",
       fontSize: "1rem",
       backgroundColor: "#6b0f1a",
       "&:hover": { backgroundColor: "#8b1f2b" },
