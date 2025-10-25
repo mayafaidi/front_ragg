@@ -40,7 +40,7 @@ export const ChatProvider = ({ children }) => {
   }
 };
 
-const fetchAllSessions = async () => {
+const fetchAllSessions = async (silent = false) => {
 const token =localStorage.getItem("token");
 if(!token)return;
 try{

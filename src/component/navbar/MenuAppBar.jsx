@@ -419,7 +419,7 @@ const getCategoryIcon = (name) => {
             Askly
           </Typography>
 {/* 🔔 زر إعلانات زاجل */}
-{/* 🔔 زر إعلانات زاجل */}
+
 <Box sx={{ position: "relative", ml: 2 }}>
   <Button
     sx={{
@@ -744,6 +744,54 @@ const getCategoryIcon = (name) => {
           </Button>
         </DialogActions>
       </Dialog>
+{/* 🔴 Dialog تأكيد الحذف */}
+<Dialog
+  open={deleteDialogOpen}
+  onClose={() => setDeleteDialogOpen(false)}
+  TransitionComponent={Grow}
+  transitionDuration={300}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+      bgcolor: "#0e1d3a",
+      color: "white",
+      textAlign: "center",
+      width: 380,
+    },
+  }}
+  BackdropProps={{
+    sx: { backdropFilter: "blur(6px)" },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
+    هل أنت متأكد من حذف هذه المحادثة؟
+  </DialogTitle>
+
+  <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+    <Button
+      onClick={() => setDeleteDialogOpen(false)}
+      sx={{ color: "#aaa" }}
+    >
+      إلغاء
+    </Button>
+    <Button
+      variant="outlined"
+      onClick={async () => {
+        await deleteSession(sessionToDelete);
+        setDeleteDialogOpen(false);
+        await fetchAllSessions(); // ✅ لتحديث القائمة بعد الحذف
+      }}
+      sx={{
+        color: "#f44336",
+        borderColor: "#f44336",
+        "&:hover": { backgroundColor: "#b71c1c", color: "white" },
+      }}
+    >
+      حذف
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/*  Drawer المحادثات */}
       <Drawer
