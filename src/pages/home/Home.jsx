@@ -261,7 +261,7 @@ useEffect(() => {
   const fullMajor = majorName[savedMajorCode] || savedMajorCode || "غير معروف";
   
   // نحفظه مؤقتًا في state أو نطبعه للتأكد
-  console.log("📘 التخصص الحالي:", fullMajor);
+  // console.log("📘 التخصص الحالي:", fullMajor);
 }, []);
 
   useEffect(() => {

@@ -54,8 +54,10 @@ const response =await axios.get("https://localhost:7017/api/Chats/sessions",
     );
 
   const allSessions = response.data?.data || [];
-    setSessions(allSessions);
+   setSessions(allSessions);
+  if (!silent) {
     window.dispatchEvent(new Event("sessionsUpdated"));
+  }
 
     return allSessions;
 
@@ -91,7 +93,7 @@ const deleteSession = async (sessionId) => {
     }
 
     window.dispatchEvent(new Event("sessionsUpdated"));
-    console.log(`تم حذف الجلسة رقم ${sessionId}`);
+    // console.log(`تم حذف الجلسة رقم ${sessionId}`);
   } catch (error) {
     console.error("فشل حذف الجلسة:", error);
   }
@@ -112,9 +114,9 @@ const response = await axios.put(`https://localhost:7017/api/Chats/sessions/${se
       });
 
    const updatedSession = response.data;
-   console.log(response.data);
+  //  console.log(response.data);
  window.dispatchEvent(new Event("sessionsUpdated"));
-    console.log(" Session renamed:", updatedSession);
+    // console.log(" Session renamed:", updatedSession);
     return updatedSession;
 
 }
@@ -149,7 +151,7 @@ const searchMessages = async (query) => {
 };
 
 const handleDownloadSession = async (id) => {
-  console.log(id);
+  // console.log(id);
   const token = localStorage.getItem("token"); 
   try {
       const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {

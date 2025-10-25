@@ -148,7 +148,7 @@ useEffect(() => {
       const hasNewArticle = data.data?.some((cat) =>
         cat.articles?.some((a) => a.is_new)
       );
-      console.log(data)
+      // console.log(data)
       setHasNew(hasNewArticle);
     })
     .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
@@ -275,7 +275,7 @@ const getCategoryIcon = (name) => {
   }, []);
   useEffect(() => {
     const updateData = async () => {
-      await fetchAllSessions();
+      await fetchAllSessions(true);
       const stats = await getUserStats();
       if (stats) setUserStats(stats);
     };
