@@ -491,9 +491,9 @@ const getCategoryIcon = (name) => {
       backgroundColor: "#1a1e9fff",
       border: "none", 
       boxShadow: "none", 
-        boxShadow: "0 4px 15px rgba(0,0,0,0.3)", // ظل خفيف أنعم
-      borderRadius: "12px", // 🔹 حواف ناعمة
-      overflow: "hidden", // 🔹 يمنع ظهور حواف بيضاء عند الزوايا
+        boxShadow: "0 4px 15px rgba(0,0,0,0.3)", 
+      borderRadius: "12px", 
+      overflow: "hidden", 
     },
   }}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -747,298 +747,224 @@ const getCategoryIcon = (name) => {
 
       {/*  Drawer المحادثات */}
       <Drawer
+  sx={{
+    width: drawerWidth,
+    "& .MuiDrawer-paper": {
+      width: drawerWidth,
+      boxSizing: "border-box",
+      background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
+      color: "white",
+      display: "flex",
+      flexDirection: "column",
+    },
+  }}
+  variant="persistent"
+  anchor="right"
+  open={open}
+>
+  {/* 🔹 الجزء الثابت بالكامل */}
+  <Box
+    sx={{
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+    }}
+  >
+    {/* عنوان المحادثات */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        p: 1,
+        borderBottom: "1px solid rgba(255,255,255,0.15)",
+      }}
+    >
+      <IconButton onClick={handleDrawerClose}>
+        <ChevronRightIcon sx={{ color: "white" }} />
+      </IconButton>
+      <Typography sx={{ ml: 1, fontWeight: "bold" }}>المحادثات</Typography>
+    </Box>
+
+    {/* زر إنشاء محادثة جديدة */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 1.5,
+      }}
+    >
+      <Button
+  sx={{
+    backgroundColor: "#1E3A8A",
+    color: "white",
+    borderRadius: "8px",
+    textTransform: "none",
+    "&:hover": { backgroundColor: "#1E3A8A" },
+  }}
+  onClick={handleCreateSession}
+>
+  إنشاء محادثة جديدة +
+</Button>
+
+    </Box>
+
+    {/* مربع البحث */}
+    <Box sx={{ p: 1.5 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="ابحث في المحادثات..."
+        size="small"
+        value={searchQuery}
+        dir="rtl"
         sx={{
-          width: drawerWidth,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
-            color: "white",
+          bgcolor: "rgba(255,255,255,0.1)",
+          borderRadius: "8px",
+          input: { color: "white" },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgba(255,255,255,0.2)",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#00bcd4",
           },
         }}
-        variant="persistent"
-        anchor="right"
-        open={open}
-      >
+        onChange={async (e) => {
+          const query = e.target.value;
+          setSearchQuery(query);
+          if (!query.trim()) {
+            setSearchResults([]);
+            return;
+          }
+          const results = await searchMessages(query);
+          setSearchResults(results);
+        }}
+      />
+
+      {/* 🔹 صندوق الإحصائيات */}
+      {userStats && (
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            p: 1,
-            borderBottom: "1px solid rgba(255,255,255,0.2)",
+            textAlign: "center",
+            p: 2,
+            mt: 2,
+            background: "rgba(255,255,255,0.05)",
+            borderRadius: 1,
+            border: "1px solid rgba(255,255,255,0.1)",
           }}
         >
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronRightIcon sx={{ color: "white" }} />
-          </IconButton>
-          <Typography sx={{ ml: 1 }}>المحادثات</Typography>
+          <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+            عدد المحادثات: {userStats.totalSessions || 0}
+          </Typography>
+          <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+            إجمالي الرسائل: {userStats.totalMessages || 0}
+          </Typography>
+          <Typography variant="body2" sx={{ color: "white" }}>
+            آخر ظهور:{" "}
+            {userStats.lastActivity
+              ? (() => {
+                  const date = new Date(userStats.lastActivity);
+                  date.setHours(date.getHours() + 3);
+                  return `${date.toLocaleDateString("ar-EG")} - ${date.toLocaleTimeString("ar-EG", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`;
+                })()
+              : "غير متاح"}
+          </Typography>
         </Box>
+      )}
+    </Box>
+  </Box>
 
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
-
-        <Box
+  {/* 🔹 الجزء القابل للتمرير فقط (قائمة المحادثات) */}
+  <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1 }}>
+    {filteredSessions.map((session, index) => {
+      const currentSessionId = Number(
+        localStorage.getItem("currentSessionId")
+      );
+      return (
+        <ListItem
+          key={session.id}
+          selected={session.id === currentSessionId}
+          divider
           sx={{
-            display: "flex",
-            alignItems: "center",
-            p: 1.5,
-            justifyContent: "center",
-          }}
-        >
-          <Button
-            sx={{
-              backgroundColor: " #1E3A8A",
-              color: "white",
-              borderRadius: "8px",
-              textTransform: "none",
-              "&:hover": { backgroundColor: "#1E3A8A" },
-            }}
-            onClick={handleCreateSession}
-          >
-            إنشاء محادثة جديدة +
-          </Button>
-        </Box>
-
-        <Box sx={{ p: 1.5 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="ابحث في المحادثات..."
-            size="small"
-            value={searchQuery}
-            dir="rtl"
-            sx={{
-              bgcolor: "rgba(255,255,255,0.1)",
-              borderRadius: "8px",
-              input: { color: "white" },
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.2)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#00bcd4",
-              },
-            }}
-            onChange={async (e) => {
-              const query = e.target.value;
-              setSearchQuery(query);
-              if (!query.trim()) {
-                setSearchResults([]);
-                return;
-              }
-              const results = await searchMessages(query);
-              setSearchResults(results);
-            }}
-          />
-          {userStats && (
-            <Box
-              sx={{
-                textAlign: "center",
-                p: 2,
-                borderTop: "1px solid rgba(255,255,255,0.2)",
-                mt: 2,
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 1,
-              }}
-            >
-              <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
-                عدد المحادثات: {userStats.totalSessions || 0}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
-                إجمالي الرسائل: {userStats.totalMessages || 0}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "white" }}>
-                اخر ظهور:{" "}
-                {userStats.lastActivity
-                  ? (() => {
-                      const date = new Date(userStats.lastActivity);
-                      date.setHours(date.getHours() + 3); // إضافة 3 ساعات
-                      return `${date.toLocaleDateString(
-                        "ar-EG"
-                      )} - ${date.toLocaleTimeString("ar-EG", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}`;
-                    })()
-                  : "غير متاح"}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        {searchResults.map((msg) => (
-          <ListItem
-            key={msg.id}
-            divider
-            button
-            onClick={() => {
-              // تخزين الجلسة الحالية
-              localStorage.setItem("currentSessionId", msg.chatSessionId);
-              // إرسال حدث لتحديث الصفحة الرئيسية
-              window.dispatchEvent(new Event("sessionSelected"));
-              // إغلاق القائمة الجانبية
-              handleDrawerClose();
-              // تنظيف البحث
-              setSearchQuery("");
-              setSearchResults([]);
-            }}
-            sx={{
-              "&:hover": {
-                backgroundColor: "rgba(0,188,212,0.15)",
-                cursor: "pointer",
-              },
-            }}
-          >
-            <ListItemText
-              primary={`${
-                msg.content.length > 60
-                  ? msg.content.slice(0, 60) + "..."
-                  : msg.content
-              }`}
-              secondary={`في الجلسة: ${msg.sessionTitle || msg.chatSessionId}`}
-              primaryTypographyProps={{ color: "#fff" }}
-              secondaryTypographyProps={{ color: "#aaa" }}
-            />
-          </ListItem>
-        ))}
-
-        <List>
-          {filteredSessions.map((session, index) => {
-            const currentSessionId = Number(
-              localStorage.getItem("currentSessionId")
-            );
-            return (
-              <ListItem
-                key={session.id}
-                selected={session.id === currentSessionId}
-                divider
-                sx={{
-                  direction: "rtl",
-                  justifyContent: "space-between",
-                  textAlign: "right",
-                  position: "relative",
-                  "&:hover": {
-                    cursor: "pointer",
-                    backgroundColor: "rgba(0,188,212,0.15)",
-                  },
-                  "&:hover .actions": {
-                    opacity: 1,
-                    transform: "translateX(0)",
-                  },
-                }}
-              >
-                <ListItemText
-                  primary={session.title || `محادثة ${index + 1}`}
-                  onClick={() => {
-                    localStorage.setItem("currentSessionId", session.id);
-                    window.dispatchEvent(new Event("sessionSelected"));
-                    handleDrawerClose();
-                  }}
-                />
-
-                {/* مجموعة الأيقونات */}
-                <Box
-                  className="actions"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    opacity: 0,
-                    transform: "translateX(10px)",
-                    transition: "opacity 0.3s ease, transform 0.3s ease",
-                  }}
-                >
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadSession(session.id);
-                    }}
-                    title="تحميل PDF"
-                    sx={{ color: "#ffffffff" }}
-                  >
-                    <FileDownloadIcon fontSize="small" />
-                  </IconButton>
-
-                  <IconButton
-                    edge="end"
-                    sx={{ color: "#ffffffff" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRenameSession(session.id, session.title);
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-
-                  <IconButton
-                    edge="end"
-                    sx={{ color: "#ffffffff" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSessionToDelete(session.id);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              </ListItem>
-            );
-          })}
-        </List>
-        {/* Dialog تأكيد الحذف */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-          TransitionComponent={Grow}
-          transitionDuration={300}
-          PaperProps={{
-            sx: {
-              borderRadius: 3,
-              p: 2,
-              bgcolor: "#0e1d3a",
-              color: "white",
-              textAlign: "center",
-              width: 380,
+            direction: "rtl",
+            justifyContent: "space-between",
+            textAlign: "right",
+            "&:hover": {
+              backgroundColor: "rgba(0,188,212,0.15)",
+              cursor: "pointer",
+            },
+            "&:hover .actions": {
+              opacity: 1,
+              transform: "translateX(0)",
             },
           }}
-          BackdropProps={{
-            sx: { backdropFilter: "blur(6px)" },
-          }}
         >
-          <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
-            تأكيد الحذف
-          </DialogTitle>
+          <ListItemText
+            primary={session.title || `محادثة ${index + 1}`}
+            onClick={() => {
+              localStorage.setItem("currentSessionId", session.id);
+              window.dispatchEvent(new Event("sessionSelected"));
+              handleDrawerClose();
+            }}
+          />
 
-          <DialogContent sx={{ mt: 1 }}>
-            <Typography sx={{ color: "white" }}>
-              هل تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.
-            </Typography>
-          </DialogContent>
+          {/* أيقونات العمليات */}
+          <Box
+            className="actions"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              opacity: 0,
+              transform: "translateX(10px)",
+              transition: "opacity 0.3s ease, transform 0.3s ease",
+            }}
+          >
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownloadSession(session.id);
+              }}
+              title="تحميل PDF"
+              sx={{ color: "#fff" }}
+            >
+              <FileDownloadIcon fontSize="small" />
+            </IconButton>
 
-          <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-            <Button
-              onClick={() => setDeleteDialogOpen(false)}
-              sx={{ color: "#aaa" }}
-            >
-              إلغاء
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={async () => {
-                await deleteSession(sessionToDelete);
-                await fetchAllSessions();
-                setDeleteDialogOpen(false);
-              }}
-              sx={{
-                color: "#ef4444",
-                borderColor: "#ef4444",
-                "&:hover": { backgroundColor: "#b91c1c", color: "white" },
+            <IconButton
+              edge="end"
+              sx={{ color: "#fff" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRenameSession(session.id, session.title);
               }}
             >
-              حذف
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Drawer>
+              <EditIcon fontSize="small" />
+            </IconButton>
+
+            <IconButton
+              edge="end"
+              sx={{ color: "#fff" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSessionToDelete(session.id);
+                setDeleteDialogOpen(true);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </ListItem>
+      );
+    })}
+  </Box>
+</Drawer>
+
     </>
   );
 }
