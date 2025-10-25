@@ -475,16 +475,27 @@ const getCategoryIcon = (name) => {
       }}
       MenuListProps={{
         sx: {
-          backgroundColor: "#1a1e9fff",
-          color: "#333",
-          fontFamily: "Cairo",
-          borderRadius: "10px",
-          // border: "1px solid #ddd",
-          textAlign: "right",
-          direction: "rtl",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+           backgroundColor: "#1a1e9fff",
+      color: "#fff",
+      fontFamily: "Cairo",
+      borderRadius: "0", 
+      textAlign: "right",
+      direction: "rtl",
+      boxShadow: "none", 
+      p: 1, 
+      m: 0, 
         },
       }}
+       PaperProps={{
+    sx: {
+      backgroundColor: "#1a1e9fff",
+      border: "none", 
+      boxShadow: "none", 
+        boxShadow: "0 4px 15px rgba(0,0,0,0.3)", // ظل خفيف أنعم
+      borderRadius: "12px", // 🔹 حواف ناعمة
+      overflow: "hidden", // 🔹 يمنع ظهور حواف بيضاء عند الزوايا
+    },
+  }}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       transformOrigin={{ vertical: "top", horizontal: "right" }}
     >
@@ -512,25 +523,37 @@ const getCategoryIcon = (name) => {
 
   {/* القائمة الفرعية للمقالات */}
   {subAnchorEl && (
-    <Menu
-      anchorEl={subAnchorEl}
-      open={Boolean(subAnchorEl)}
-      onClose={() => setSubAnchorEl(null)}
-      MenuListProps={{
-        sx: {
-          backgroundColor: "#1a1e9fff",
-          color: "#ffffffff",
-          fontFamily: "Cairo",
-          borderRadius: "10px",
-          // border: "1px solid #ddd",
-          textAlign: "right",
-          direction: "rtl",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-        },
-      }}
-      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      transformOrigin={{ vertical: "top", horizontal: "left" }}
-    >
+   <Menu
+  anchorEl={subAnchorEl}
+  open={Boolean(subAnchorEl)}
+  onClose={() => setSubAnchorEl(null)}
+  MenuListProps={{
+    sx: {
+      backgroundColor: "#1a1e9fff",
+      color: "#fff",
+      fontFamily: "Cairo",
+      borderRadius: "0",
+      textAlign: "right",
+      direction: "rtl",
+      boxShadow: "none",
+      p: 1,
+      m: 0,
+    },
+  }}
+  PaperProps={{
+    sx: {
+      backgroundColor: "#1a1e9fff",
+      border: "none",
+      boxShadow: "none",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.3)", // ظل خفيف أنعم
+      borderRadius: "12px", // 🔹 حواف ناعمة
+      overflow: "hidden", // 🔹 يمنع ظهور حواف بيضاء عند الزوايا
+    },
+  }}
+  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+  transformOrigin={{ vertical: "top", horizontal: "left" }}
+>
+
       {selectedCategory?.articles?.map((article, index) => (
         <Box key={index}>
           <MenuItem
