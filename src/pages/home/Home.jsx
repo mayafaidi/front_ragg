@@ -169,12 +169,10 @@ console.log(data);
 
     if (botMsg && botMsg.content) {
       const fullText = botMsg.content;
-      const serverTime = new Date(botMsg.createdAt);
-      const localTime = new Date(serverTime.getTime() + 3 * 60 * 60 * 1000);
-      const displayTime = localTime.toLocaleTimeString("EG", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      const displayTime = new Date(botMsg.createdAt).toLocaleTimeString("EG", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
       let currentText = "";
       const botMessageId = `b-${Date.now()}`;
