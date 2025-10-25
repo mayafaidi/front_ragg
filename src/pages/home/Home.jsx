@@ -196,8 +196,8 @@ console.log(data);
       );
 
       // ⚡ إعدادات سرعة الكتابة (سريعة جدًا وديناميكية)
-      const chunkSize = 8;   // كل مرة يضيف 8 أحرف
-      const delay = 1;       // تأخير شبه معدوم لسرعة فورية تقريبًا
+      const chunkSize = 1;   // كل مرة يضيف 8 أحرف
+      const delay = 25;       // تأخير شبه معدوم لسرعة فورية تقريبًا
       let index = 0;
       let lastTime = 0;
 
