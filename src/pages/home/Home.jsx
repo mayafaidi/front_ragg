@@ -160,7 +160,16 @@ const [botTyping, setBotTyping] = useState(false);
   setSending(true);
 
 try {
-  const completedCourses = JSON.parse(localStorage.getItem("completedCourses")) || [];///حفظت المواد المنجزة تمام تمام
+  const completedCoursesResponse  = await fetch(`https://localhost:7017/api/Courses/completed/${majorCode}`,{
+    method:"GET",
+     headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    }
+  });
+  const completedCourses = await completedCoursesResponse.json();
+console.log(completedCourses, "asdasdsad");
+  ///حفظت المواد المنجزة تمام تمام
 //فبعطيني رقم المنجزة تمام برضو تمام 
   const response = await fetch("https://localhost:7017/api/Chats/send-message", {
     method: "POST",
@@ -171,9 +180,7 @@ try {
     body: JSON.stringify({
       sessionId: Number(sessionId),
       role: "user",
-      content: `هذه قائمة المواد التي أنجزتها: ${completedCourses.join(", ")}.
-من فضلك لا تقترح أي مادة من هذه المواد.
-الآن: ${userMsg.text}`,
+      content: `${userMsg.text}`,
       major: majorCode,
       completedCourses: completedCourses, 
     }),
