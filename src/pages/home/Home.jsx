@@ -132,7 +132,7 @@ const [botTyping, setBotTyping] = useState(false);
 
   if (!token || !sessionId) return;
 
-  // 🟢 رسالة المستخدم
+  //  يكتب
   const userMsg = {
     id: `u-${Date.now()}`,
     sender: "user",
@@ -159,20 +159,26 @@ const [botTyping, setBotTyping] = useState(false);
   setInput("");
   setSending(true);
 
-  try {
-    const response = await fetch("https://localhost:7017/api/Chats/send-message", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sessionId: Number(sessionId),
-        role: "user",
-        content: userMsg.text,
-        major: majorCode,
-      }),
-    });
+try {
+  const completedCourses = JSON.parse(localStorage.getItem("completedCourses")) || [];///حفظت المواد المنجزة تمام تمام
+//فبعطيني رقم المنجزة تمام برضو تمام 
+  const response = await fetch("https://localhost:7017/api/Chats/send-message", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sessionId: Number(sessionId),
+      role: "user",
+      content: `هذه قائمة المواد التي أنجزتها: ${completedCourses.join(", ")}.
+من فضلك لا تقترح أي مادة من هذه المواد.
+الآن: ${userMsg.text}`,
+      major: majorCode,
+      completedCourses: completedCourses, 
+    }),
+  });
+
 
     const data = await response.json();
     const botMsg = data?.data;
@@ -203,9 +209,9 @@ const [botTyping, setBotTyping] = useState(false);
         )
       );
 
-      // ⚡ إعدادات سرعة الكتابة (سريعة جدًا وديناميكية)
-      const chunkSize = 8;   // كل مرة يضيف 8 أحرف
-      const delay = 1;       // تأخير شبه معدوم لسرعة فورية تقريبًا
+      
+      const chunkSize = 8;   
+      const delay = 1;       
       let index = 0;
       let lastTime = 0;
 
@@ -216,7 +222,6 @@ const [botTyping, setBotTyping] = useState(false);
             index += chunkSize;
             lastTime = timestamp;
 
-            // تحديث النص بشكل ديناميكي وسلس
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === botMessageId ? { ...m, text: currentText } : m
@@ -226,7 +231,6 @@ const [botTyping, setBotTyping] = useState(false);
 
           requestAnimationFrame(typeEffect);
         } else {
-          // ✅ انتهى العرض بالكامل
           setMessages((prev) =>
             prev.map((m) =>
               m.id === botMessageId ? { ...m, isStreaming: false } : m
@@ -238,7 +242,6 @@ const [botTyping, setBotTyping] = useState(false);
         }
       };
 
-      // 🚀 بدء الكتابة السريعة الديناميكية
       requestAnimationFrame(typeEffect);
     }
   } catch (error) {

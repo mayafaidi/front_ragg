@@ -64,7 +64,7 @@ const response =await axios.get("https://localhost:7017/api/Chats/sessions",
 }
 catch(error){
 
-console.error("❌ فشل في جلب كل الجلسات:", error);
+console.error(" فشل في جلب كل الجلسات:", error);
 }
 
 

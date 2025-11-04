@@ -115,8 +115,9 @@ export default function MenuAppBar({
 
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const [specialty, setSpecialty] = useState(
-    localStorage.getItem("currentSpecialty") || ""
-  );
+  localStorage.getItem("currentSpecialty") || "General"
+);
+
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -132,19 +133,27 @@ export default function MenuAppBar({
   const [renameSessionId, setRenameSessionId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
-// 🔔 إعلانات زاجل
+//  إعلانات زاجل
 const [zajelAnchorEl, setZajelAnchorEl] = useState(null);
 const [subAnchorEl, setSubAnchorEl] = useState(null);
 const [selectedCategory, setSelectedCategory] = useState(null);
 const [zajelCategories, setZajelCategories] = useState([]);
 const [hasNew, setHasNew] = useState(false);
+//لانشاء مواد المنجزة 
+const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
+const [courses, setCourses] = useState([]);
+const [coursesByCategory, setCoursesByCategory] = useState(null);
+
+
+
+
 
 useEffect(() => {
   fetch("http://127.0.0.1:8000/api/zajel")
     .then((res) => res.json())
     .then((data) => {
       setZajelCategories(data.data || []);
-      // 🔴 تحقق إذا في أي مقالة جديدة
+      //  تحقق إذا في أي مقالة جديدة
       const hasNewArticle = data.data?.some((cat) =>
         cat.articles?.some((a) => a.is_new)
       );
@@ -160,7 +169,7 @@ const handleCloseZajel = () => {
   setZajelAnchorEl(null);
   setSubAnchorEl(null);
 };
-// 🟢 فتح القوائم
+//  فتح القوائم
 const handleOpenMainMenu = (event) => {
   setAnchorEl(event.currentTarget);
 };
@@ -261,13 +270,76 @@ const getCategoryIcon = (name) => {
         }
       );
 
-      alert("✅ تم تغيير كلمة المرور بنجاح");
+      alert(" تم تغيير كلمة المرور بنجاح");
     } catch (error) {
-      alert(error.response?.data?.message || "❌ فشل تغيير كلمة المرور");
+      alert(error.response?.data?.message || " فشل تغيير كلمة المرور");
     } finally {
       setChangingPassword(false);
     }
   };
+  useEffect(() => {
+  if (!openCoursesDialog) return;
+
+  const fetchCourses = async () => {
+    try {
+      // اعطيني كل مواد التخصص
+      const res = await axios.post(
+        "https://localhost:7017/api/Courses/get-by-major",
+        { major: specialty },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      let data = res.data;
+
+      //
+      const completedRes = await axios.get(
+        `https://localhost:7017/api/Courses/completed/${specialty}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const completedList = completedRes.data; 
+
+      Object.values(data).forEach((cat) => {
+        cat["المساقات"] = cat["المساقات"].map((course) => ({
+          ...course,
+          // IsCompleted: completedList.includes(String(course["رقم المساق"]))
+       IsCompleted: completedList.includes(course["اسم المساق"])
+
+        }));
+      });
+
+      setCoursesByCategory(data);
+
+    } catch (err) {
+      console.error("خطأ في تحميل المواد:", err);
+    }
+  };
+
+  fetchCourses();
+}, [openCoursesDialog, specialty]);
+
+// useEffect(() => {
+//   if (!openCoursesDialog) return;
+
+//   const fetchCourses = async () => {
+//     try {
+//       const res = await axios.post(
+//         "https://localhost:7017/api/Courses/get-by-major",
+//         { major: specialty },
+//         {
+//           headers: { Authorization: `Bearer ${token}` }
+//         }
+//       );
+      
+//       setCoursesByCategory(res.data); // نحفظه كامل
+//     } catch (err) {
+//       console.error("خطأ في جلب المواد:", err);
+//     }
+//   };
+
+//   fetchCourses();
+// }, [openCoursesDialog, specialty]);
+
 
   useEffect(() => {
     const storedName = localStorage.getItem("username");
@@ -418,7 +490,7 @@ const getCategoryIcon = (name) => {
           >
             Askly
           </Typography>
-{/* 🔔 زر إعلانات زاجل */}
+{/*  زر إعلانات زاجل */}
 
 <Box sx={{ position: "relative", ml: 2 }}>
   <Button
@@ -448,7 +520,7 @@ const getCategoryIcon = (name) => {
       sx={{
         position: "absolute",
         top: "-4px",
-        left: "-8px", // 👈 أقصى اليسار
+        left: "-8px", //  أقصى اليسار
         width: 12,
         height: 12,
         bgcolor: "red",
@@ -546,8 +618,8 @@ const getCategoryIcon = (name) => {
       border: "none",
       boxShadow: "none",
       boxShadow: "0 4px 15px rgba(0,0,0,0.3)", // ظل خفيف أنعم
-      borderRadius: "12px", // 🔹 حواف ناعمة
-      overflow: "hidden", // 🔹 يمنع ظهور حواف بيضاء عند الزوايا
+      borderRadius: "12px", //  حواف ناعمة
+      overflow: "hidden", //  يمنع ظهور حواف بيضاء عند الزوايا
     },
   }}
   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
@@ -744,7 +816,7 @@ const getCategoryIcon = (name) => {
           </Button>
         </DialogActions>
       </Dialog>
-{/* 🔴 Dialog تأكيد الحذف */}
+{/*  Dialog تأكيد الحذف */}
 <Dialog
   open={deleteDialogOpen}
   onClose={() => setDeleteDialogOpen(false)}
@@ -780,7 +852,7 @@ const getCategoryIcon = (name) => {
       onClick={async () => {
         await deleteSession(sessionToDelete);
         setDeleteDialogOpen(false);
-        await fetchAllSessions(); // ✅ لتحديث القائمة بعد الحذف
+        await fetchAllSessions(); 
       }}
       sx={{
         color: "#f44336",
@@ -810,7 +882,7 @@ const getCategoryIcon = (name) => {
   anchor="right"
   open={open}
 >
-  {/* 🔹 الجزء الثابت بالكامل */}
+  
   <Box
     sx={{
       position: "sticky",
@@ -858,6 +930,191 @@ const getCategoryIcon = (name) => {
 </Button>
 
     </Box>
+
+<Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    p: 0.5,
+  }}
+>
+  <Button
+    sx={{
+       backgroundColor: "#1E3A8A",
+      color: "white",
+      borderRadius: "8px",
+      textTransform: "none",
+      "&:hover": { backgroundColor: "#1E3A8A" },
+    }}
+    onClick={() => setOpenCoursesDialog(true)}
+  >
+    المواد المنجزة 
+  </Button>
+</Box>
+
+
+<Dialog
+  open={openCoursesDialog}
+  onClose={() => setOpenCoursesDialog(false)}
+  TransitionComponent={Grow}
+  transitionDuration={300}
+  PaperProps={{
+    sx: {
+      borderRadius: 5,
+      p: 2,
+      bgcolor: "#0e1d3a",
+      color: "white",
+         width: "70vw",       // ✅ حجم مناسب
+    maxWidth: "960px",   // ✅ يمنع التمدد الكامل
+    maxHeight: "90vh",   // ✅ يمنع تجاوز الشاشة
+    },
+  }}
+  BackdropProps={{
+    sx: { backdropFilter: "blur(6px)" },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: "bold", textAlign: "center", mb: 1 }}>
+    المواد المنجزة 
+  </DialogTitle>
+
+  <DialogContent
+  dividers
+  sx={{
+     direction: "rtl",
+    maxHeight: "65vh",   // ✅ يحافظ أن المحتوى ما يطلع خارج الشاشة
+    overflowY: "auto",   // ✅ سكرول داخلي مريح
+    p: 2,
+  }}
+>
+  {coursesByCategory && (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr", // ← 3 أعمدة
+        gap: 1,
+      }}
+    >
+      {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => (
+        <Box
+          key={categoryName}
+          sx={{
+            background: "rgba(255,255,255,0.05)",
+            borderRadius: 2,
+            p: 2,
+            border: "1px solid rgba(255,255,255,0.15)",
+          }}
+        >
+          {/* عنوان القسم */}
+          <Typography
+            sx={{
+              fontWeight: "bold",
+              color: "#90caf9",
+              textAlign: "center",
+              mb: 2,
+            }}
+          >
+            {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
+          </Typography>
+
+          {/* المساقات */}
+          {categoryData["المساقات"].map((course) => (
+            <Box
+              key={course["رقم المساق"]}
+              sx={{ display: "flex", alignItems: "center", mb: 1 }}
+            >
+              <input
+                type="checkbox"
+                checked={course.IsCompleted}
+                onChange={() => {
+                  setCoursesByCategory((prev) => ({
+                    ...prev,
+                    [categoryName]: {
+                      ...prev[categoryName],
+                      المساقات: prev[categoryName]["المساقات"].map((c) =>
+                        c["رقم المساق"] === course["رقم المساق"]
+                          ? { ...c, IsCompleted: !c.IsCompleted }
+                          : c
+                      ),
+                    },
+                  }));
+                }}
+              />
+              <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
+                {course["اسم المساق"]}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      ))}
+    </Box>
+  )}
+</DialogContent>
+
+
+  <DialogActions sx={{ justifyContent: "center" }}>
+    <Button
+     variant="outlined"
+      sx={{
+        color: "#eeeeeeff",
+        // borderColor: "#4560d8ff",
+        "&:hover": { backgroundColor: "#933313ff", color: "white" },
+      }}
+       onClick={() => setOpenCoursesDialog(false)}>
+      إغلاق
+    </Button>
+
+    <Button
+      variant="outlined"
+      sx={{
+        color: "#ffffffff",
+        // borderColor: "#4560d8ff",
+        "&:hover": { backgroundColor: "#2115c7ff", color: "white" },
+      }}
+      onClick={async () => {
+        const completedCodes = [];
+
+        Object.values(coursesByCategory).forEach((cat) => {
+          cat["المساقات"].forEach((c) => {
+            if (c.IsCompleted) completedCodes.push(String(c["رقم المساق"]));
+
+          });
+        });
+console.log("✅ الكود قبل الحفظ:", completedCodes);
+        await axios.post(
+    "https://localhost:7017/api/Courses/save-completed",
+    {
+      major: specialty,
+      completedCourseCodes: completedCodes,
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  console.log("💾 تم إرسال البيانات للباك:", {
+    major: specialty,
+    completedCourseCodes: completedCodes,
+  });
+localStorage.setItem("completedCourses", JSON.stringify(completedCodes));
+  console.log("📦 المخزن داخل localStorage:", JSON.parse(localStorage.getItem("completedCourses")));
+
+        alert(" تم حفظ المواد بنجاح");
+        setOpenCoursesDialog(false);
+      }}
+    >
+      حفظ
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
+
+
+
+
+
+
+
+
 
     {/* مربع البحث */}
     <Box sx={{ p: 1.5 }}>
@@ -927,7 +1184,7 @@ const getCategoryIcon = (name) => {
     </Box>
   </Box>
 
-  {/* 🔹 الجزء القابل للتمرير فقط (قائمة المحادثات) */}
+  {/*  الجزء القابل للتمرير فقط (قائمة المحادثات) */}
   <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1 }}>
     {filteredSessions.map((session, index) => {
       const currentSessionId = Number(
