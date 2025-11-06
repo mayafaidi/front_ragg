@@ -988,65 +988,76 @@ const getCategoryIcon = (name) => {
   }}
 >
   {coursesByCategory && (
+   <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", // ✅ خلايا مرنة
+    gap: 2,
+    justifyContent: "center",  // ✅ توسيط الأعمدة أفقياً
+    alignItems: "start",       // ✅ محاذاة من الأعلى
+    justifyItems: "center",    // ✅ توسيط محتوى كل خلية
+  }}
+>
+     {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
+  // ✅ تجاهل أي قسم عدد ساعاته 0
+  if (!categoryData["عدد_الساعات_المطلوبة"] || categoryData["عدد_الساعات_المطلوبة"] === 0) {
+    return null;
+  }
+
+  return (
     <Box
+      key={categoryName}
       sx={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr", // ← 3 أعمدة
-        gap: 1,
+        background: "rgba(255,255,255,0.05)",
+        borderRadius: 2,
+        p: 2,
+        border: "1px solid rgba(255,255,255,0.15)",
       }}
     >
-      {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => (
-        <Box
-          key={categoryName}
-          sx={{
-            background: "rgba(255,255,255,0.05)",
-            borderRadius: 2,
-            p: 2,
-            border: "1px solid rgba(255,255,255,0.15)",
-          }}
-        >
-          {/* عنوان القسم */}
-          <Typography
-            sx={{
-              fontWeight: "bold",
-              color: "#90caf9",
-              textAlign: "center",
-              mb: 2,
-            }}
-          >
-            {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
-          </Typography>
+      {/* عنوان القسم */}
+      <Typography
+        sx={{
+          fontWeight: "bold",
+          color: "#90caf9",
+          textAlign: "center",
+          mb: 2,
+        }}
+      >
+        {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
+      </Typography>
 
-          {/* المساقات */}
-          {categoryData["المساقات"].map((course) => (
-            <Box
-              key={course["رقم المساق"]}
-              sx={{ display: "flex", alignItems: "center", mb: 1 }}
-            >
-              <input
-                type="checkbox"
-                checked={course.IsCompleted}
-                onChange={() => {
-                  setCoursesByCategory((prev) => ({
-                    ...prev,
-                    [categoryName]: {
-                      ...prev[categoryName],
-                      المساقات: prev[categoryName]["المساقات"].map((c) =>
-                        c["رقم المساق"] === course["رقم المساق"]
-                          ? { ...c, IsCompleted: !c.IsCompleted }
-                          : c
-                      ),
-                    },
-                  }));
-                }}
-              />
-              <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
-                {course["اسم المساق"]}
-              </Typography>
-            </Box>
-          ))}
+      {/* المساقات */}
+      {categoryData["المساقات"].map((course) => (
+        <Box
+          key={course["رقم المساق"]}
+          sx={{ display: "flex", alignItems: "center", mb: 1 }}
+        >
+          <input
+            type="checkbox"
+            checked={course.IsCompleted}
+            onChange={() => {
+              setCoursesByCategory((prev) => ({
+                ...prev,
+                [categoryName]: {
+                  ...prev[categoryName],
+                  المساقات: prev[categoryName]["المساقات"].map((c) =>
+                    c["رقم المساق"] === course["رقم المساق"]
+                      ? { ...c, IsCompleted: !c.IsCompleted }
+                      : c
+                  ),
+                },
+              }));
+            }}
+          />
+          <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
+            {course["اسم المساق"]}
+          </Typography>
         </Box>
       ))}
+    </Box>
+  );
+})}
+
     </Box>
   )}
 </DialogContent>
