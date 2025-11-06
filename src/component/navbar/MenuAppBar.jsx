@@ -998,11 +998,14 @@ const getCategoryIcon = (name) => {
     justifyItems: "center",    // ✅ توسيط محتوى كل خلية
   }}
 >
-     {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
-  // ✅ تجاهل أي قسم عدد ساعاته 0
+    {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
+  // ✅ تجاهل الأقسام ذات 0 ساعات 
   if (!categoryData["عدد_الساعات_المطلوبة"] || categoryData["عدد_الساعات_المطلوبة"] === 0) {
     return null;
   }
+
+  // ✅ هل كل المساقات في هذا القسم محددة؟
+  const allChecked = categoryData["المساقات"].every((c) => c.IsCompleted);
 
   return (
     <Box
@@ -1014,19 +1017,54 @@ const getCategoryIcon = (name) => {
         border: "1px solid rgba(255,255,255,0.15)",
       }}
     >
-      {/* عنوان القسم */}
-      <Typography
+
+      {/* 🔹 عنوان القسم + زر اختيار الكل */}
+      <Box
         sx={{
-          fontWeight: "bold",
-          color: "#90caf9",
-          textAlign: "center",
-          mb: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+          flexDirection:"column",
+          gap:1.5,
         }}
       >
-        {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
-      </Typography>
+        <Typography
+          sx={{
+            fontWeight: "bold",
+            color: "#90caf9",
+            textAlign: "center",
+          }}
+        >
+          {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
+        </Typography>
 
-      {/* المساقات */}
+        <Button
+          variant="outlined"
+          size="small"
+          sx={{
+            color: allChecked ? "#ff8a8a" : "#8aff8a",
+            borderColor: "rgba(255,255,255,0.3)",
+            "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+          }}
+          onClick={() => {
+            setCoursesByCategory((prev) => ({
+              ...prev,
+              [categoryName]: {
+                ...prev[categoryName],
+                المساقات: prev[categoryName]["المساقات"].map((course) => ({
+                  ...course,
+                  IsCompleted: !allChecked, // ✅ إذا الكل محدد → إلغاء، إذا مش محدد → تحديد الكل
+                })),
+              },
+            }));
+          }}
+        >
+          {allChecked ? "إلغاء الكل" : "اختيار الكل"}
+        </Button>
+      </Box>
+
+      {/* ✅ قائمة المساقات */}
       {categoryData["المساقات"].map((course) => (
         <Box
           key={course["رقم المساق"]}
@@ -1054,9 +1092,11 @@ const getCategoryIcon = (name) => {
           </Typography>
         </Box>
       ))}
+
     </Box>
   );
 })}
+
 
     </Box>
   )}

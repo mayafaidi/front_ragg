@@ -34,7 +34,7 @@ const [botTyping, setBotTyping] = useState(false);
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  const { sessions, fetchAllSessions, createSession } = useChat();
+  const { sessions, fetchAllSessions, createSession,renamesession } = useChat();
 
   // جلب رسائل جلسة معيّنة
  const fetchMessages = async (sessionId) => {
@@ -98,29 +98,26 @@ const [botTyping, setBotTyping] = useState(false);
 
 
   // إنشاء جلسة جديدة
-  const handleCreateSession = async () => {
-    const newSession = await createSession();
-    if (newSession) {
-      setMessages(
-        newSession.messages.length > 0
-          ? newSession.messages.map((m, idx) => ({
-              id: m.id ?? `new-${idx}`,
-              sender: m.role === "user" ? "user" : "bot",
-              text: m.content,
-              isTyping: false,
-            }))
-          : [
-              {
-                id: "welcome",
-                sender: "bot",
-                text: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
-                isTyping: false,
-              },
-            ]
-      );
-      await fetchAllSessions();
-    }
-  };
+ const handleCreateSession = async () => {
+  const newSession = await createSession();
+  
+  if (newSession) {
+    localStorage.setItem("currentSessionId", newSession.id);
+    window.dispatchEvent(new Event("sessionSelected"));
+
+    setMessages([
+      {
+        id: "welcome",
+        sender: "bot",
+        text: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
+        isTyping: false,
+      },
+    ]);
+
+    await fetchAllSessions(true);
+  }
+};
+
 
  const handleSend = async () => {
   if (!input.trim() || sending) return;
@@ -150,7 +147,11 @@ const [botTyping, setBotTyping] = useState(false);
   };
 
   setMessages((prev) => [...prev, userMsg, typingMsg]);
-
+if (messages.length <= 1) {
+  await renamesession(Number(sessionId), userMsg.text.slice(0, 20));
+  await fetchAllSessions(true);
+  window.dispatchEvent(new Event("sessionsUpdated"));
+}
   userMsg.time = new Date().toLocaleTimeString("EG", {
     hour: "2-digit",
     minute: "2-digit",
