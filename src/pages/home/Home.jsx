@@ -184,6 +184,8 @@ console.log(completedCourses, "asdasdsad");
       content: `${userMsg.text}`,
       major: majorCode,
       completedCourses: completedCourses, 
+      year:localStorage.getItem('year')||'1',
+      semester:localStorage.getItem('semester')||'1'
     }),
   });
 

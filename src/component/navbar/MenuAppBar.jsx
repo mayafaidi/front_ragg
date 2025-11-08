@@ -127,6 +127,9 @@ export default function MenuAppBar({
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [username, setUsername] = useState("");
+  const [year, setYear] = useState(localStorage.getItem('year')||'1');
+const [semester, setSemester] = useState(localStorage.getItem('semester')||'1');
+
   // rename dialog
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
@@ -965,9 +968,9 @@ const getCategoryIcon = (name) => {
       p: 2,
       bgcolor: "#0e1d3a",
       color: "white",
-         width: "70vw",       // ✅ حجم مناسب
-    maxWidth: "960px",   // ✅ يمنع التمدد الكامل
-    maxHeight: "90vh",   // ✅ يمنع تجاوز الشاشة
+      width: "70vw",
+      maxWidth: "960px",
+      maxHeight: "90vh",
     },
   }}
   BackdropProps={{
@@ -979,139 +982,181 @@ const getCategoryIcon = (name) => {
   </DialogTitle>
 
   <DialogContent
-  dividers
-  sx={{
-     direction: "rtl",
-    maxHeight: "65vh",   // ✅ يحافظ أن المحتوى ما يطلع خارج الشاشة
-    overflowY: "auto",   // ✅ سكرول داخلي مريح
-    p: 2,
-  }}
->
-  {coursesByCategory && (
-   <Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", // ✅ خلايا مرنة
-    gap: 2,
-    justifyContent: "center",  // ✅ توسيط الأعمدة أفقياً
-    alignItems: "start",       // ✅ محاذاة من الأعلى
-    justifyItems: "center",    // ✅ توسيط محتوى كل خلية
-  }}
->
-    {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
-  // ✅ تجاهل الأقسام ذات 0 ساعات 
-  if (!categoryData["عدد_الساعات_المطلوبة"] || categoryData["عدد_الساعات_المطلوبة"] === 0) {
-    return null;
-  }
+    dividers
+    sx={{
+      direction: "rtl",
+      maxHeight: "65vh",
+      overflowY: "auto",
+      p: 2,
+    }}
+  >
+    {/* 🟢 Inputs للسنة والفصل */}
+   <Box sx={{ display: "flex", gap: 2, mb: 3, justifyContent: "center", flexWrap: "wrap" }}>
+  <TextField
+    label="السنة"
+    type="number"
+    value={year}
+    onChange={(e) => setYear(e.target.value)}
+    sx={{
+      width: 120,
+      "& .MuiInputBase-root": {
+        color: "white",
+        bgcolor: "rgba(255,255,255,0.05)",
+        borderRadius: 1,
+        px: 1,
+      },
+      "& .MuiInputLabel-root": { color: "#90caf9" },
+      "& .MuiInputBase-input": { textAlign: "center" },
+      "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
+      "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#90caf9" },
+    }}
+  />
+  <TextField
+    label="الفصل"
+    type="number"
+    value={semester}
+    onChange={(e) => {
+      let val = parseInt(e.target.value);
+      if (val > 2) val = 2; // ❌ الحد الأعلى للفصل هو 2
+      setSemester(val);
+    }}
+    sx={{
+      width: 120,
+      "& .MuiInputBase-root": {
+        color: "white",
+        bgcolor: "rgba(255,255,255,0.05)",
+        borderRadius: 1,
+        px: 1,
+      },
+      "& .MuiInputLabel-root": { color: "#90caf9" },
+      "& .MuiInputBase-input": { textAlign: "center" },
+      "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
+      "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#90caf9" },
+    }}
+  />
+</Box>
 
-  // ✅ هل كل المساقات في هذا القسم محددة؟
-  const allChecked = categoryData["المساقات"].every((c) => c.IsCompleted);
 
-  return (
-    <Box
-      key={categoryName}
-      sx={{
-        background: "rgba(255,255,255,0.05)",
-        borderRadius: 2,
-        p: 2,
-        border: "1px solid rgba(255,255,255,0.15)",
-      }}
-    >
-
-      {/* 🔹 عنوان القسم + زر اختيار الكل */}
+    {coursesByCategory && (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-          flexDirection:"column",
-          gap:1.5,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: 2,
+          justifyContent: "center",
+          alignItems: "start",
+          justifyItems: "center",
         }}
       >
-        <Typography
-          sx={{
-            fontWeight: "bold",
-            color: "#90caf9",
-            textAlign: "center",
-          }}
-        >
-          {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
-        </Typography>
+        {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
+          if (!categoryData["عدد_الساعات_المطلوبة"] || categoryData["عدد_الساعات_المطلوبة"] === 0) {
+            return null;
+          }
 
-        <Button
-          variant="outlined"
-          size="small"
-          sx={{
-            color: allChecked ? "#ff8a8a" : "#8aff8a",
-            borderColor: "rgba(255,255,255,0.3)",
-            "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-          }}
-          onClick={() => {
-            setCoursesByCategory((prev) => ({
-              ...prev,
-              [categoryName]: {
-                ...prev[categoryName],
-                المساقات: prev[categoryName]["المساقات"].map((course) => ({
-                  ...course,
-                  IsCompleted: !allChecked, // ✅ إذا الكل محدد → إلغاء، إذا مش محدد → تحديد الكل
-                })),
-              },
-            }));
-          }}
-        >
-          {allChecked ? "إلغاء الكل" : "اختيار الكل"}
-        </Button>
+          const allChecked = categoryData["المساقات"].every((c) => c.IsCompleted);
+
+          return (
+            <Box
+              key={categoryName}
+              sx={{
+                background: "rgba(255,255,255,0.05)",
+                borderRadius: 2,
+                p: 2,
+                border: "1px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              {/* عنوان القسم + زر اختيار الكل */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                  flexDirection: "column",
+                  gap: 1.5,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#90caf9",
+                    textAlign: "center",
+                  }}
+                >
+                  {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
+                </Typography>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    color: allChecked ? "#ff8a8a" : "#8aff8a",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+                  }}
+                  onClick={() => {
+                    setCoursesByCategory((prev) => ({
+                      ...prev,
+                      [categoryName]: {
+                        ...prev[categoryName],
+                        المساقات: prev[categoryName]["المساقات"].map((course) => ({
+                          ...course,
+                          IsCompleted: !allChecked,
+                        })),
+                      },
+                    }));
+                  }}
+                >
+                  {allChecked ? "إلغاء الكل" : "اختيار الكل"}
+                </Button>
+              </Box>
+
+              {/* قائمة المساقات */}
+              {categoryData["المساقات"].map((course) => (
+                <Box
+                  key={course["رقم المساق"]}
+                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={course.IsCompleted}
+                    onChange={() => {
+                      setCoursesByCategory((prev) => ({
+                        ...prev,
+                        [categoryName]: {
+                          ...prev[categoryName],
+                          المساقات: prev[categoryName]["المساقات"].map((c) =>
+                            c["رقم المساق"] === course["رقم المساق"]
+                              ? { ...c, IsCompleted: !c.IsCompleted }
+                              : c
+                          ),
+                        },
+                      }));
+                    }}
+                  />
+                  <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
+                    {course["اسم المساق"]}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          );
+        })}
       </Box>
-
-      {/* ✅ قائمة المساقات */}
-      {categoryData["المساقات"].map((course) => (
-        <Box
-          key={course["رقم المساق"]}
-          sx={{ display: "flex", alignItems: "center", mb: 1 }}
-        >
-          <input
-            type="checkbox"
-            checked={course.IsCompleted}
-            onChange={() => {
-              setCoursesByCategory((prev) => ({
-                ...prev,
-                [categoryName]: {
-                  ...prev[categoryName],
-                  المساقات: prev[categoryName]["المساقات"].map((c) =>
-                    c["رقم المساق"] === course["رقم المساق"]
-                      ? { ...c, IsCompleted: !c.IsCompleted }
-                      : c
-                  ),
-                },
-              }));
-            }}
-          />
-          <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
-            {course["اسم المساق"]}
-          </Typography>
-        </Box>
-      ))}
-
-    </Box>
-  );
-})}
-
-
-    </Box>
-  )}
-</DialogContent>
-
+    )}
+  </DialogContent>
 
   <DialogActions sx={{ justifyContent: "center" }}>
     <Button
-     variant="outlined"
+      variant="outlined"
       sx={{
         color: "#eeeeeeff",
-        // borderColor: "#4560d8ff",
         "&:hover": { backgroundColor: "#933313ff", color: "white" },
       }}
-       onClick={() => setOpenCoursesDialog(false)}>
+      onClick={() => setOpenCoursesDialog(false)}
+    >
       إغلاق
     </Button>
 
@@ -1119,36 +1164,35 @@ const getCategoryIcon = (name) => {
       variant="outlined"
       sx={{
         color: "#ffffffff",
-        // borderColor: "#4560d8ff",
         "&:hover": { backgroundColor: "#2115c7ff", color: "white" },
       }}
       onClick={async () => {
         const completedCodes = [];
-
         Object.values(coursesByCategory).forEach((cat) => {
           cat["المساقات"].forEach((c) => {
             if (c.IsCompleted) completedCodes.push(String(c["رقم المساق"]));
-
           });
         });
-console.log("✅ الكود قبل الحفظ:", completedCodes);
+
+        console.log("✅ الكود قبل الحفظ:", completedCodes);
+
         await axios.post(
-    "https://localhost:7017/api/Courses/save-completed",
-    {
-      major: specialty,
-      completedCourseCodes: completedCodes,
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+          "https://localhost:7017/api/Courses/save-completed",
+          {
+            major: specialty,
+            completedCourseCodes: completedCodes
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-  console.log("💾 تم إرسال البيانات للباك:", {
-    major: specialty,
-    completedCourseCodes: completedCodes,
-  });
-localStorage.setItem("completedCourses", JSON.stringify(completedCodes));
-  console.log("📦 المخزن داخل localStorage:", JSON.parse(localStorage.getItem("completedCourses")));
-
-        alert(" تم حفظ المواد بنجاح");
+        console.log("💾 تم إرسال البيانات للباك:", {
+          major: specialty,
+          completedCourseCodes: completedCodes
+        });
+        localStorage.setItem('year',String(year))
+        localStorage.setItem('semester',String(semester))
+        localStorage.setItem("completedCourses", JSON.stringify(completedCodes));
+        alert("تم حفظ المواد بنجاح");
         setOpenCoursesDialog(false);
       }}
     >
@@ -1156,6 +1200,7 @@ localStorage.setItem("completedCourses", JSON.stringify(completedCodes));
     </Button>
   </DialogActions>
 </Dialog>
+
 
 
 
