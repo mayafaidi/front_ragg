@@ -166,6 +166,7 @@ const handleDownloadSession = async (id) => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+    window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("خطأ أثناء تحميل الجلسة:", error);
     }
