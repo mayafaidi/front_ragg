@@ -117,6 +117,23 @@ const [botTyping, setBotTyping] = useState(false);
     await fetchAllSessions(true);
   }
 };
+const streamText = (finalText, messageId) => {
+  let index = 0;
+
+  const interval = setInterval(() => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? { ...msg, text: finalText.slice(0, index) }
+          : msg
+      )
+    );
+
+    index++;
+
+    if (index > finalText.length) clearInterval(interval);
+  }, 25); // ⚡ السرعة (كل 25ms حرف)
+};
 
 const handleSend = async () => {
   if (!input.trim() || sending) return;
@@ -230,20 +247,26 @@ if (botMsg?.content) {
       const botMessageId = `b-${Date.now()}`;
 
       // استبدال رسالة "يكتب..." برد فعلي
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === typingId
-            ? {
-                id: botMessageId,
-                sender: "bot",
-                text: fullText,
-                isTyping: false,
-                isStreaming: false,
-                time: displayTime,
-              }
-            : m
-        )
-      );
+     setMessages((prev) =>
+  prev.map((m) =>
+    m.id === typingId
+      ? {
+          id: botMessageId,
+          sender: "bot",
+          text: "",
+          isTyping: false,
+          isStreaming: true,
+          time: displayTime,
+        }
+      : m
+  )
+);
+
+// 🟦 شغّل الكتابة حرف حرف
+setTimeout(() => {
+  streamText(fullText, botMessageId);
+}, 100);
+
     }
 
   } catch (error) {
