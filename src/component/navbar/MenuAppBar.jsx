@@ -130,19 +130,17 @@ export default function MenuAppBar({
   const [year, setYear] = useState(localStorage.getItem('year')||'1');
 const [semester, setSemester] = useState(localStorage.getItem('semester')||'1');
 
-  // rename dialog
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
   const [renameSessionId, setRenameSessionId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
-//  إعلانات زاجل
 const [zajelAnchorEl, setZajelAnchorEl] = useState(null);
 const [subAnchorEl, setSubAnchorEl] = useState(null);
 const [selectedCategory, setSelectedCategory] = useState(null);
 const [zajelCategories, setZajelCategories] = useState([]);
 const [hasNew, setHasNew] = useState(false);
-//لانشاء مواد المنجزة 
+
 const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
 const [courses, setCourses] = useState([]);
 const [coursesByCategory, setCoursesByCategory] = useState(null);
@@ -156,11 +154,9 @@ useEffect(() => {
     .then((res) => res.json())
     .then((data) => {
       setZajelCategories(data.data || []);
-      //  تحقق إذا في أي مقالة جديدة
       const hasNewArticle = data.data?.some((cat) =>
         cat.articles?.some((a) => a.is_new)
       );
-      // console.log(data)
       setHasNew(hasNewArticle);
     })
     .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
@@ -172,13 +168,12 @@ const handleCloseZajel = () => {
   setZajelAnchorEl(null);
   setSubAnchorEl(null);
 };
-//  فتح القوائم
 const handleOpenMainMenu = (event) => {
   setAnchorEl(event.currentTarget);
 };
 
 const handleCloseMainMenu = () => {
-  // ننتظر قليل قبل الإغلاق حتى لا تختفي عند الانتقال للقائمة الفرعية
+  
   setTimeout(() => {
     setAnchorEl(null);
     setSubAnchorEl(null);
@@ -209,7 +204,6 @@ const getCategoryIcon = (name) => {
   return "📁";
 };
 
-  // Account Menu handlers
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
   const handleAccountClose = () => setAccountAnchorEl(null);
 
@@ -285,7 +279,7 @@ const getCategoryIcon = (name) => {
 
   const fetchCourses = async () => {
     try {
-      // اعطيني كل مواد التخصص
+      
       const res = await axios.post(
         "https://localhost:7017/api/Courses/get-by-major",
         { major: specialty },
@@ -305,7 +299,7 @@ const getCategoryIcon = (name) => {
       Object.values(data).forEach((cat) => {
         cat["المساقات"] = cat["المساقات"].map((course) => ({
           ...course,
-          // IsCompleted: completedList.includes(String(course["رقم المساق"]))
+          
        IsCompleted: completedList.includes(course["اسم المساق"])
 
         }));
@@ -321,27 +315,7 @@ const getCategoryIcon = (name) => {
   fetchCourses();
 }, [openCoursesDialog, specialty]);
 
-// useEffect(() => {
-//   if (!openCoursesDialog) return;
 
-//   const fetchCourses = async () => {
-//     try {
-//       const res = await axios.post(
-//         "https://localhost:7017/api/Courses/get-by-major",
-//         { major: specialty },
-//         {
-//           headers: { Authorization: `Bearer ${token}` }
-//         }
-//       );
-      
-//       setCoursesByCategory(res.data); // نحفظه كامل
-//     } catch (err) {
-//       console.error("خطأ في جلب المواد:", err);
-//     }
-//   };
-
-//   fetchCourses();
-// }, [openCoursesDialog, specialty]);
 
 
   useEffect(() => {
@@ -416,22 +390,7 @@ const getCategoryIcon = (name) => {
                 <Typography sx={{ ml: 2, fontWeight: "bold", paddingRight: 2 }}>
                   {username || "User"}
                 </Typography>
-                {/* <IconButton onClick={handleAccountMenu} color="inherit" sx={{ p: 0 }}>
-  <Avatar
-    sx={{
-      bgcolor: "#757a7bff",
-      color: "white",
-      fontWeight: "bold",
-      textTransform: "uppercase",
-      width: 36,
-      height: 36,
-      fontSize: "16px",
-      
-    }}
-  >
-    {username ? username.charAt(0) : "U"}
-  </Avatar>
-</IconButton> */}
+                
                 <IconButton
                   onClick={handleAccountMenu}
                   color="inherit"
@@ -493,7 +452,6 @@ const getCategoryIcon = (name) => {
           >
             Askly
           </Typography>
-{/*  زر إعلانات زاجل */}
 
 <Box sx={{ position: "relative", ml: 2 }}>
   <Button
@@ -502,7 +460,6 @@ const getCategoryIcon = (name) => {
       fontSize: "1rem",
       backgroundColor: "#6b0f1a",
       "&:hover": { backgroundColor: "#8b1f2b" },
-      // borderRadius: "8px",
       px: 2,
       transition: "all 0.3s ease",
       display: "flex",
@@ -523,7 +480,7 @@ const getCategoryIcon = (name) => {
       sx={{
         position: "absolute",
         top: "-4px",
-        left: "-8px", //  أقصى اليسار
+        left: "-8px", 
         width: 12,
         height: 12,
         bgcolor: "red",
@@ -539,7 +496,6 @@ const getCategoryIcon = (name) => {
     />
   )}
 
-  {/* القائمة الأولى للفئات */}
   {zajelAnchorEl && (
     <Menu
       anchorEl={zajelAnchorEl}
@@ -586,7 +542,7 @@ const getCategoryIcon = (name) => {
             justifyContent: "space-between",
             minWidth: "230px",
             transition: "background-color 0.2s ease"
-            // "&:hover": { backgroundColor: "#f2f2f2" },
+            
           }}
         >
           <span>{cat.category_name}</span>
@@ -596,7 +552,7 @@ const getCategoryIcon = (name) => {
     </Menu>
   )}
 
-  {/* القائمة الفرعية للمقالات */}
+  
   {subAnchorEl && (
    <Menu
   anchorEl={subAnchorEl}
@@ -620,9 +576,9 @@ const getCategoryIcon = (name) => {
       backgroundColor: "#1a1e9fff",
       border: "none",
       boxShadow: "none",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.3)", // ظل خفيف أنعم
-      borderRadius: "12px", //  حواف ناعمة
-      overflow: "hidden", //  يمنع ظهور حواف بيضاء عند الزوايا
+      boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+      borderRadius: "12px",    
+      overflow: "hidden",    
     },
   }}
   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
@@ -642,7 +598,7 @@ const getCategoryIcon = (name) => {
               gap: "10px",
               minWidth: "320px",
               transition: "background-color 0.2s ease"
-              // "&:hover": { backgroundColor: "#f0f0f0" },
+             
             }}
           >
             {article.title}
@@ -672,7 +628,6 @@ const getCategoryIcon = (name) => {
         </Toolbar>
       </MyAppBar>
 
-      {/*  Dialog تغيير كلمة المرور */}
       <Dialog
         open={openPasswordDialog}
         onClose={handleClosePasswordDialog}
@@ -755,7 +710,6 @@ const getCategoryIcon = (name) => {
         </form>
       </Dialog>
 
-      {/*  Dialog إعادة تسمية المحادثة */}
       <Dialog
         open={renameDialogOpen}
         onClose={() => setRenameDialogOpen(false)}
@@ -819,7 +773,6 @@ const getCategoryIcon = (name) => {
           </Button>
         </DialogActions>
       </Dialog>
-{/*  Dialog تأكيد الحذف */}
 <Dialog
   open={deleteDialogOpen}
   onClose={() => setDeleteDialogOpen(false)}

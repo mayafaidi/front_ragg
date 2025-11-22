@@ -24,10 +24,10 @@ import StyledMarkdown from "../../StyleMarkDown";
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [sending, setSending] = useState(false); // spinner زر الإرسال
+  const [sending, setSending] = useState(false); 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // لتحميل الصفحة فقط (مش للإرسال)
-  const [copiedId, setCopiedId] = useState(null); //هاي عشان اشارة الكوبي
+  const [loading, setLoading] = useState(true); 
+  const [copiedId, setCopiedId] = useState(null); 
   const messagesEndRef = React.useRef(null);
 const [botTyping, setBotTyping] = useState(false);
 
@@ -36,7 +36,7 @@ const [botTyping, setBotTyping] = useState(false);
 
   const { sessions, fetchAllSessions, createSession,renamesession } = useChat();
 
-  // جلب رسائل جلسة معيّنة
+  
  const fetchMessages = async (sessionId) => {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -97,7 +97,7 @@ const [botTyping, setBotTyping] = useState(false);
 };
 
 
-  // إنشاء جلسة جديدة
+ 
  const handleCreateSession = async () => {
   const newSession = await createSession();
   

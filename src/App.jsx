@@ -6,6 +6,8 @@ import ResetPass from "./pages/resetpas/Resetpass";
 import Home from "./pages/home/Home";
 import ProtectedRouter from "../ProtectedRouter";
 import PublicRoute from "../PublicRouter";
+import VerifiedPage from "./pages/verifiedpage/VerifiedPage";
+
 import { ChatProvider } from "./context/ChatContext";
 function App() {
   return (
@@ -52,6 +54,14 @@ function App() {
         </PublicRoute>
       }
     />
+     <Route
+    path="/verified"
+    element={
+      <PublicRoute>
+        <VerifiedPage />
+      </PublicRoute>
+    }
+  />
     <Route
       path="/Home"
       element={
