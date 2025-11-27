@@ -41,7 +41,7 @@ import DialogActions from "@mui/material/DialogActions";
 import { useChat } from "../../context/ChatContext";
 import Avatar from "@mui/material/Avatar";
 import PersonIcon from "@mui/icons-material/Person";
-import {jwtDecode}  from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const drawerWidth = 280;
 
@@ -82,11 +82,12 @@ const passwordSchema = yup.object().shape({
       "يجب أن تختلف كلمة المرور الجديدة عن الحالية"
     ),
 });
-const token=localStorage.getItem('token');
-if(token){
-  const decoded=jwtDecode(token);
-  const username = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-  localStorage.setItem('username',username)
+const token = localStorage.getItem("token");
+if (token) {
+  const decoded = jwtDecode(token);
+  const username =
+    decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+  localStorage.setItem("username", username);
 }
 export default function MenuAppBar({
   open,
@@ -115,8 +116,8 @@ export default function MenuAppBar({
 
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const [specialty, setSpecialty] = useState(
-  localStorage.getItem("currentSpecialty") || "General"
-);
+    localStorage.getItem("currentSpecialty") || "General"
+  );
 
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,82 +128,78 @@ export default function MenuAppBar({
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [username, setUsername] = useState("");
-  const [year, setYear] = useState(localStorage.getItem('year')||'1');
-const [semester, setSemester] = useState(localStorage.getItem('semester')||'1');
+  const [year, setYear] = useState(localStorage.getItem("year") || "1");
+  const [semester, setSemester] = useState(
+    localStorage.getItem("semester") || "1"
+  );
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
   const [renameSessionId, setRenameSessionId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
-const [zajelAnchorEl, setZajelAnchorEl] = useState(null);
-const [subAnchorEl, setSubAnchorEl] = useState(null);
-const [selectedCategory, setSelectedCategory] = useState(null);
-const [zajelCategories, setZajelCategories] = useState([]);
-const [hasNew, setHasNew] = useState(false);
+  const [zajelAnchorEl, setZajelAnchorEl] = useState(null);
+  const [subAnchorEl, setSubAnchorEl] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [zajelCategories, setZajelCategories] = useState([]);
+  const [hasNew, setHasNew] = useState(false);
 
-const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
-const [courses, setCourses] = useState([]);
-const [coursesByCategory, setCoursesByCategory] = useState(null);
+  const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [coursesByCategory, setCoursesByCategory] = useState(null);
 
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/zajel")
+      .then((res) => res.json())
+      .then((data) => {
+        setZajelCategories(data.data || []);
+        const hasNewArticle = data.data?.some((cat) =>
+          cat.articles?.some((a) => a.is_new)
+        );
+        setHasNew(hasNewArticle);
+      })
+      .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
+  }, []);
 
-
-
-
-useEffect(() => {
-  fetch("http://127.0.0.1:8000/api/zajel")
-    .then((res) => res.json())
-    .then((data) => {
-      setZajelCategories(data.data || []);
-      const hasNewArticle = data.data?.some((cat) =>
-        cat.articles?.some((a) => a.is_new)
-      );
-      setHasNew(hasNewArticle);
-    })
-    .catch((err) => console.error("خطأ في جلب إعلانات زاجل:", err));
-}, []);
-
-
-const handleOpenZajel = (e) => setZajelAnchorEl(e.currentTarget);
-const handleCloseZajel = () => {
-  setZajelAnchorEl(null);
-  setSubAnchorEl(null);
-};
-const handleOpenMainMenu = (event) => {
-  setAnchorEl(event.currentTarget);
-};
-
-const handleCloseMainMenu = () => {
-  
-  setTimeout(() => {
-    setAnchorEl(null);
+  const handleOpenZajel = (e) => setZajelAnchorEl(e.currentTarget);
+  const handleCloseZajel = () => {
+    setZajelAnchorEl(null);
     setSubAnchorEl(null);
-  }, 200);
-};
+  };
+  const handleOpenMainMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-const handleOpenSubMenu = (event, category) => {
-  setSelectedCategory(category);
-  setSubAnchorEl(event.currentTarget);
-};
+  const handleCloseMainMenu = () => {
+    setTimeout(() => {
+      setAnchorEl(null);
+      setSubAnchorEl(null);
+    }, 200);
+  };
 
-const handleCloseSubMenu = () => {
-  setTimeout(() => {
-    setSubAnchorEl(null);
-  }, 200);
-};
+  const handleOpenSubMenu = (event, category) => {
+    setSelectedCategory(category);
+    setSubAnchorEl(event.currentTarget);
+  };
 
-const handleOpenSub = (e, cat) => {
-  setSelectedCategory(cat);
-  setSubAnchorEl(e.currentTarget);
-};
-const handleCloseSub = () => setSubAnchorEl(null);
+  const handleCloseSubMenu = () => {
+    setTimeout(() => {
+      setSubAnchorEl(null);
+    }, 200);
+  };
 
-const getCategoryIcon = (name) => {
-  if (name.includes("هامة")) return "📢";
-  if (name.includes("عامة")) return "📰";
-  if (name.includes("دورات")) return "🎓";
-  return "📁";
-};
+  const handleOpenSub = (e, cat) => {
+    setSelectedCategory(cat);
+    setSubAnchorEl(e.currentTarget);
+  };
+  const handleCloseSub = () => setSubAnchorEl(null);
+
+  const getCategoryIcon = (name) => {
+    if (name.includes("هامة")) return "📢";
+    if (name.includes("عامة")) return "📰";
+    if (name.includes("دورات")) return "🎓";
+    return "📁";
+  };
 
   const handleAccountMenu = (e) => setAccountAnchorEl(e.currentTarget);
   const handleAccountClose = () => setAccountAnchorEl(null);
@@ -275,48 +272,42 @@ const getCategoryIcon = (name) => {
     }
   };
   useEffect(() => {
-  if (!openCoursesDialog) return;
+    if (!openCoursesDialog) return;
 
-  const fetchCourses = async () => {
-    try {
-      
-      const res = await axios.post(
-        "https://localhost:7017/api/Courses/get-by-major",
-        { major: specialty },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const fetchCourses = async () => {
+      try {
+        const res = await axios.post(
+          "https://localhost:7017/api/Courses/get-by-major",
+          { major: specialty },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      let data = res.data;
+        let data = res.data;
 
-      //
-      const completedRes = await axios.get(
-        `https://localhost:7017/api/Courses/completed/${specialty}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        //
+        const completedRes = await axios.get(
+          `https://localhost:7017/api/Courses/completed/${specialty}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      const completedList = completedRes.data; 
+        const completedList = completedRes.data;
 
-      Object.values(data).forEach((cat) => {
-        cat["المساقات"] = cat["المساقات"].map((course) => ({
-          ...course,
-          
-       IsCompleted: completedList.includes(course["اسم المساق"])
+        Object.values(data).forEach((cat) => {
+          cat["المساقات"] = cat["المساقات"].map((course) => ({
+            ...course,
 
-        }));
-      });
+            IsCompleted: completedList.includes(course["اسم المساق"]),
+          }));
+        });
 
-      setCoursesByCategory(data);
+        setCoursesByCategory(data);
+      } catch (err) {
+        console.error("خطأ في تحميل المواد:", err);
+      }
+    };
 
-    } catch (err) {
-      console.error("خطأ في تحميل المواد:", err);
-    }
-  };
-
-  fetchCourses();
-}, [openCoursesDialog, specialty]);
-
-
-
+    fetchCourses();
+  }, [openCoursesDialog, specialty]);
 
   useEffect(() => {
     const storedName = localStorage.getItem("username");
@@ -390,7 +381,7 @@ const getCategoryIcon = (name) => {
                 <Typography sx={{ ml: 2, fontWeight: "bold", paddingRight: 2 }}>
                   {username || "User"}
                 </Typography>
-                
+
                 <IconButton
                   onClick={handleAccountMenu}
                   color="inherit"
@@ -453,174 +444,165 @@ const getCategoryIcon = (name) => {
             Askly
           </Typography>
 
-<Box sx={{ position: "relative", ml: 2 }}>
-  <Button
-    sx={{
-      color: "white",
-      fontSize: "1rem",
-      backgroundColor: "#6b0f1a",
-      "&:hover": { backgroundColor: "#8b1f2b" },
-      px: 2,
-      transition: "all 0.3s ease",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      position: "relative",
-    }}
-    endIcon={<ArrowDropDownIcon />}
-    onClick={(e) =>
-      setZajelAnchorEl(zajelAnchorEl ? null : e.currentTarget)
-    }
-  >
-    🔔 إعلانات زاجل
-  </Button>
+          <Box sx={{ position: "relative", ml: 2 }}>
+            <Button
+              sx={{
+                color: "white",
+                fontSize: "1rem",
+                backgroundColor: "#6b0f1a",
+                "&:hover": { backgroundColor: "#8b1f2b" },
+                px: 2,
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                position: "relative",
+              }}
+              endIcon={<ArrowDropDownIcon />}
+              onClick={(e) =>
+                setZajelAnchorEl(zajelAnchorEl ? null : e.currentTarget)
+              }
+            >
+              🔔 إعلانات زاجل
+            </Button>
 
-  {hasNew && (
-    <Box
-      sx={{
-        position: "absolute",
-        top: "-4px",
-        left: "-8px", 
-        width: 12,
-        height: 12,
-        bgcolor: "red",
-        borderRadius: "50%",
-        boxShadow: "0 0 6px red",
-        animation: "pulse 1.5s infinite",
-        "@keyframes pulse": {
-          "0%": { transform: "scale(1)", opacity: 1 },
-          "50%": { transform: "scale(1.3)", opacity: 0.6 },
-          "100%": { transform: "scale(1)", opacity: 1 },
-        },
-      }}
-    />
-  )}
-
-  {zajelAnchorEl && (
-    <Menu
-      anchorEl={zajelAnchorEl}
-      open={Boolean(zajelAnchorEl)}
-      onClose={() => {
-        setZajelAnchorEl(null);
-        setSubAnchorEl(null);
-      }}
-      MenuListProps={{
-        sx: {
-           backgroundColor: "#1a1e9fff",
-      color: "#fff",
-      fontFamily: "Cairo",
-      borderRadius: "0", 
-      textAlign: "right",
-      direction: "rtl",
-      boxShadow: "none", 
-      p: 1, 
-      m: 0, 
-        },
-      }}
-       PaperProps={{
-    sx: {
-      backgroundColor: "#1a1e9fff",
-      border: "none", 
-      boxShadow: "none", 
-        boxShadow: "0 4px 15px rgba(0,0,0,0.3)", 
-      borderRadius: "12px", 
-      overflow: "hidden", 
-    },
-  }}
-      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
-    >
-      {zajelCategories.map((cat) => (
-        <MenuItem
-          key={cat.category_id}
-          onClick={(e) => {
-            setSelectedCategory(cat);
-            setSubAnchorEl(e.currentTarget);
-          }}
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            minWidth: "230px",
-            transition: "background-color 0.2s ease"
-            
-          }}
-        >
-          <span>{cat.category_name}</span>
-          <span>{getCategoryIcon(cat.category_name)}</span>
-        </MenuItem>
-      ))}
-    </Menu>
-  )}
-
-  
-  {subAnchorEl && (
-   <Menu
-  anchorEl={subAnchorEl}
-  open={Boolean(subAnchorEl)}
-  onClose={() => setSubAnchorEl(null)}
-  MenuListProps={{
-    sx: {
-      backgroundColor: "#1a1e9fff",
-      color: "#fff",
-      fontFamily: "Cairo",
-      borderRadius: "0",
-      textAlign: "right",
-      direction: "rtl",
-      boxShadow: "none",
-      p: 1,
-      m: 0,
-    },
-  }}
-  PaperProps={{
-    sx: {
-      backgroundColor: "#1a1e9fff",
-      border: "none",
-      boxShadow: "none",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-      borderRadius: "12px",    
-      overflow: "hidden",    
-    },
-  }}
-  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-  transformOrigin={{ vertical: "top", horizontal: "left" }}
->
-
-      {selectedCategory?.articles?.map((article, index) => (
-        <Box key={index}>
-          <MenuItem
-            component="a"
-            href={article.link}
-            target="_blank"
-            onClick={() => setSubAnchorEl(null)}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "10px",
-              minWidth: "320px",
-              transition: "background-color 0.2s ease"
-             
-            }}
-          >
-            {article.title}
-            {article.is_new && (
-              <span style={{ color: "crimson", fontSize: "0.8rem" }}>جديد</span>
+            {hasNew && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "-4px",
+                  left: "-8px",
+                  width: 12,
+                  height: 12,
+                  bgcolor: "red",
+                  borderRadius: "50%",
+                  boxShadow: "0 0 6px red",
+                  animation: "pulse 1.5s infinite",
+                  "@keyframes pulse": {
+                    "0%": { transform: "scale(1)", opacity: 1 },
+                    "50%": { transform: "scale(1.3)", opacity: 0.6 },
+                    "100%": { transform: "scale(1)", opacity: 1 },
+                  },
+                }}
+              />
             )}
-          </MenuItem>
-          {index < selectedCategory.articles.length - 1 && (
-            <Divider sx={{ my: 0.5 }} />
-          )}
-        </Box>
-      ))}
-    </Menu>
-  )}
-</Box>
 
+            {zajelAnchorEl && (
+              <Menu
+                anchorEl={zajelAnchorEl}
+                open={Boolean(zajelAnchorEl)}
+                onClose={() => {
+                  setZajelAnchorEl(null);
+                  setSubAnchorEl(null);
+                }}
+                MenuListProps={{
+                  sx: {
+                    backgroundColor: "#1a1e9fff",
+                    color: "#fff",
+                    fontFamily: "Cairo",
+                    borderRadius: "0",
+                    textAlign: "right",
+                    direction: "rtl",
+                    boxShadow: "none",
+                    p: 1,
+                    m: 0,
+                  },
+                }}
+                PaperProps={{
+                  sx: {
+                    backgroundColor: "#1a1e9fff",
+                    border: "none",
+                    boxShadow: "none",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  },
+                }}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                {zajelCategories.map((cat) => (
+                  <MenuItem
+                    key={cat.category_id}
+                    onClick={(e) => {
+                      setSelectedCategory(cat);
+                      setSubAnchorEl(e.currentTarget);
+                    }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      minWidth: "230px",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    <span>{cat.category_name}</span>
+                    <span>{getCategoryIcon(cat.category_name)}</span>
+                  </MenuItem>
+                ))}
+              </Menu>
+            )}
 
-
-
-
-
-
+            {subAnchorEl && (
+              <Menu
+                anchorEl={subAnchorEl}
+                open={Boolean(subAnchorEl)}
+                onClose={() => setSubAnchorEl(null)}
+                MenuListProps={{
+                  sx: {
+                    backgroundColor: "#1a1e9fff",
+                    color: "#fff",
+                    fontFamily: "Cairo",
+                    borderRadius: "0",
+                    textAlign: "right",
+                    direction: "rtl",
+                    boxShadow: "none",
+                    p: 1,
+                    m: 0,
+                  },
+                }}
+                PaperProps={{
+                  sx: {
+                    backgroundColor: "#1a1e9fff",
+                    border: "none",
+                    boxShadow: "none",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  },
+                }}
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                transformOrigin={{ vertical: "top", horizontal: "left" }}
+              >
+                {selectedCategory?.articles?.map((article, index) => (
+                  <Box key={index}>
+                    <MenuItem
+                      component="a"
+                      href={article.link}
+                      target="_blank"
+                      onClick={() => setSubAnchorEl(null)}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "10px",
+                        minWidth: "320px",
+                        transition: "background-color 0.2s ease",
+                      }}
+                    >
+                      {article.title}
+                      {article.is_new && (
+                        <span style={{ color: "crimson", fontSize: "0.8rem" }}>
+                          جديد
+                        </span>
+                      )}
+                    </MenuItem>
+                    {index < selectedCategory.articles.length - 1 && (
+                      <Divider sx={{ my: 0.5 }} />
+                    )}
+                  </Box>
+                ))}
+              </Menu>
+            )}
+          </Box>
 
           <IconButton color="inherit" edge="end" onClick={handleDrawerOpen}>
             <MenuIcon />
@@ -773,552 +755,587 @@ const getCategoryIcon = (name) => {
           </Button>
         </DialogActions>
       </Dialog>
-<Dialog
-  open={deleteDialogOpen}
-  onClose={() => setDeleteDialogOpen(false)}
-  TransitionComponent={Grow}
-  transitionDuration={300}
-  PaperProps={{
-    sx: {
-      borderRadius: 3,
-      p: 2,
-      bgcolor: "#0e1d3a",
-      color: "white",
-      textAlign: "center",
-      width: 380,
-    },
-  }}
-  BackdropProps={{
-    sx: { backdropFilter: "blur(6px)" },
-  }}
->
-  <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
-    هل أنت متأكد من حذف هذه المحادثة؟
-  </DialogTitle>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        TransitionComponent={Grow}
+        transitionDuration={300}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            bgcolor: "#0e1d3a",
+            color: "white",
+            textAlign: "center",
+            width: 380,
+          },
+        }}
+        BackdropProps={{
+          sx: { backdropFilter: "blur(6px)" },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold", color: "#f87171" }}>
+          هل أنت متأكد من حذف هذه المحادثة؟
+        </DialogTitle>
 
-  <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-    <Button
-      onClick={() => setDeleteDialogOpen(false)}
-      sx={{ color: "#aaa" }}
-    >
-      إلغاء
-    </Button>
-    <Button
-      variant="outlined"
-      onClick={async () => {
-        await deleteSession(sessionToDelete);
-        setDeleteDialogOpen(false);
-        await fetchAllSessions(); 
-      }}
-      sx={{
-        color: "#f44336",
-        borderColor: "#f44336",
-        "&:hover": { backgroundColor: "#b71c1c", color: "white" },
-      }}
-    >
-      حذف
-    </Button>
-  </DialogActions>
-</Dialog>
+        <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ color: "#aaa" }}
+          >
+            إلغاء
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={async () => {
+              await deleteSession(sessionToDelete);
+              setDeleteDialogOpen(false);
+              await fetchAllSessions();
+            }}
+            sx={{
+              color: "#f44336",
+              borderColor: "#f44336",
+              "&:hover": { backgroundColor: "#b71c1c", color: "white" },
+            }}
+          >
+            حذف
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/*  Drawer المحادثات */}
       <Drawer
-  sx={{
-    width: drawerWidth,
-    "& .MuiDrawer-paper": {
-      width: drawerWidth,
-      boxSizing: "border-box",
-      background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
-      color: "white",
-      display: "flex",
-      flexDirection: "column",
-    },
-  }}
-  variant="persistent"
-  anchor="right"
-  open={open}
->
-  
-  <Box
-    sx={{
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-    }}
-  >
-    {/* عنوان المحادثات */}
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        p: 1,
-        borderBottom: "1px solid rgba(255,255,255,0.15)",
-      }}
-    >
-      <IconButton onClick={handleDrawerClose}>
-        <ChevronRightIcon sx={{ color: "white" }} />
-      </IconButton>
-      <Typography sx={{ ml: 1, fontWeight: "bold" }}>المحادثات</Typography>
-    </Box>
-
-    {/* زر إنشاء محادثة جديدة */}
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 1.5,
-      }}
-    >
-      <Button
-  sx={{
-    backgroundColor: "#1E3A8A",
-    color: "white",
-    borderRadius: "8px",
-    textTransform: "none",
-    "&:hover": { backgroundColor: "#1E3A8A" },
-  }}
-  onClick={handleCreateSession}
->
-  إنشاء محادثة جديدة +
-</Button>
-
-    </Box>
-
-<Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    p: 0.5,
-  }}
->
-  <Button
-    sx={{
-       backgroundColor: "#1E3A8A",
-      color: "white",
-      borderRadius: "8px",
-      textTransform: "none",
-      "&:hover": { backgroundColor: "#1E3A8A" },
-    }}
-    onClick={() => setOpenCoursesDialog(true)}
-  >
-    المواد المنجزة 
-  </Button>
-</Box>
-
-
-<Dialog
-  open={openCoursesDialog}
-  onClose={() => setOpenCoursesDialog(false)}
-  TransitionComponent={Grow}
-  transitionDuration={300}
-  PaperProps={{
-    sx: {
-      borderRadius: 5,
-      p: 2,
-      bgcolor: "#0e1d3a",
-      color: "white",
-      width: "70vw",
-      maxWidth: "960px",
-      maxHeight: "90vh",
-    },
-  }}
-  BackdropProps={{
-    sx: { backdropFilter: "blur(6px)" },
-  }}
->
-  <DialogTitle sx={{ fontWeight: "bold", textAlign: "center", mb: 1 }}>
-    المواد المنجزة 
-  </DialogTitle>
-
-  <DialogContent
-    dividers
-    sx={{
-      direction: "rtl",
-      maxHeight: "65vh",
-      overflowY: "auto",
-      p: 2,
-    }}
-  >
-    {/* 🟢 Inputs للسنة والفصل */}
-   <Box sx={{ display: "flex", gap: 2, mb: 3, justifyContent: "center", flexWrap: "wrap" }}>
-  <TextField
-    label="السنة"
-    type="number"
-    value={year}
-    onChange={(e) => setYear(e.target.value)}
-    sx={{
-      width: 120,
-      "& .MuiInputBase-root": {
-        color: "white",
-        bgcolor: "rgba(255,255,255,0.05)",
-        borderRadius: 1,
-        px: 1,
-      },
-      "& .MuiInputLabel-root": { color: "#90caf9" },
-      "& .MuiInputBase-input": { textAlign: "center" },
-      "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
-      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
-      "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#90caf9" },
-    }}
-  />
-  <TextField
-    label="الفصل"
-    type="number"
-    value={semester}
-    onChange={(e) => {
-      let val = parseInt(e.target.value);
-      if (val > 2) val = 2; // ❌ الحد الأعلى للفصل هو 2
-      setSemester(val);
-    }}
-    sx={{
-      width: 120,
-      "& .MuiInputBase-root": {
-        color: "white",
-        bgcolor: "rgba(255,255,255,0.05)",
-        borderRadius: 1,
-        px: 1,
-      },
-      "& .MuiInputLabel-root": { color: "#90caf9" },
-      "& .MuiInputBase-input": { textAlign: "center" },
-      "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
-      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
-      "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#90caf9" },
-    }}
-  />
-</Box>
-
-
-    {coursesByCategory && (
-      <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 2,
-          justifyContent: "center",
-          alignItems: "start",
-          justifyItems: "center",
+          width: drawerWidth,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+          },
         }}
+        variant="persistent"
+        anchor="right"
+        open={open}
       >
-        {Object.entries(coursesByCategory).map(([categoryName, categoryData]) => {
-          if (!categoryData["عدد_الساعات_المطلوبة"] || categoryData["عدد_الساعات_المطلوبة"] === 0) {
-            return null;
-          }
-
-          const allChecked = categoryData["المساقات"].every((c) => c.IsCompleted);
-
-          return (
-            <Box
-              key={categoryName}
-              sx={{
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 2,
-                p: 2,
-                border: "1px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              {/* عنوان القسم + زر اختيار الكل */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                  flexDirection: "column",
-                  gap: 1.5,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#90caf9",
-                    textAlign: "center",
-                  }}
-                >
-                  {categoryName} ({categoryData["عدد_الساعات_المطلوبة"]} ساعة)
-                </Typography>
-
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    color: allChecked ? "#ff8a8a" : "#8aff8a",
-                    borderColor: "rgba(255,255,255,0.3)",
-                    "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-                  }}
-                  onClick={() => {
-                    setCoursesByCategory((prev) => ({
-                      ...prev,
-                      [categoryName]: {
-                        ...prev[categoryName],
-                        المساقات: prev[categoryName]["المساقات"].map((course) => ({
-                          ...course,
-                          IsCompleted: !allChecked,
-                        })),
-                      },
-                    }));
-                  }}
-                >
-                  {allChecked ? "إلغاء الكل" : "اختيار الكل"}
-                </Button>
-              </Box>
-
-              {/* قائمة المساقات */}
-              {categoryData["المساقات"].map((course) => (
-                <Box
-                  key={course["رقم المساق"]}
-                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={course.IsCompleted}
-                    onChange={() => {
-                      setCoursesByCategory((prev) => ({
-                        ...prev,
-                        [categoryName]: {
-                          ...prev[categoryName],
-                          المساقات: prev[categoryName]["المساقات"].map((c) =>
-                            c["رقم المساق"] === course["رقم المساق"]
-                              ? { ...c, IsCompleted: !c.IsCompleted }
-                              : c
-                          ),
-                        },
-                      }));
-                    }}
-                  />
-                  <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
-                    {course["اسم المساق"]}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          );
-        })}
-      </Box>
-    )}
-  </DialogContent>
-
-  <DialogActions sx={{ justifyContent: "center" }}>
-    <Button
-      variant="outlined"
-      sx={{
-        color: "#eeeeeeff",
-        "&:hover": { backgroundColor: "#933313ff", color: "white" },
-      }}
-      onClick={() => setOpenCoursesDialog(false)}
-    >
-      إغلاق
-    </Button>
-
-    <Button
-      variant="outlined"
-      sx={{
-        color: "#ffffffff",
-        "&:hover": { backgroundColor: "#2115c7ff", color: "white" },
-      }}
-      onClick={async () => {
-        const completedCodes = [];
-        Object.values(coursesByCategory).forEach((cat) => {
-          cat["المساقات"].forEach((c) => {
-            if (c.IsCompleted) completedCodes.push(String(c["رقم المساق"]));
-          });
-        });
-
-        console.log("✅ الكود قبل الحفظ:", completedCodes);
-
-        await axios.post(
-          "https://localhost:7017/api/Courses/save-completed",
-          {
-            major: specialty,
-            completedCourseCodes: completedCodes
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        console.log("💾 تم إرسال البيانات للباك:", {
-          major: specialty,
-          completedCourseCodes: completedCodes
-        });
-        localStorage.setItem('year',String(year))
-        localStorage.setItem('semester',String(semester))
-        localStorage.setItem("completedCourses", JSON.stringify(completedCodes));
-        alert("تم حفظ المواد بنجاح");
-        setOpenCoursesDialog(false);
-      }}
-    >
-      حفظ
-    </Button>
-  </DialogActions>
-</Dialog>
-
-
-
-
-
-
-
-
-
-
-
-
-    {/* مربع البحث */}
-    <Box sx={{ p: 1.5 }}>
-      <TextField
-        fullWidth
-        variant="outlined"
-        placeholder="ابحث في المحادثات..."
-        size="small"
-        value={searchQuery}
-        dir="rtl"
-        sx={{
-          bgcolor: "rgba(255,255,255,0.1)",
-          borderRadius: "8px",
-          input: { color: "white" },
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "rgba(255,255,255,0.2)",
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#00bcd4",
-          },
-        }}
-        onChange={async (e) => {
-          const query = e.target.value;
-          setSearchQuery(query);
-          if (!query.trim()) {
-            setSearchResults([]);
-            return;
-          }
-          const results = await searchMessages(query);
-          setSearchResults(results);
-        }}
-      />
-
-      {/* 🔹 صندوق الإحصائيات */}
-      {userStats && (
         <Box
           sx={{
-            textAlign: "center",
-            p: 2,
-            mt: 2,
-            background: "rgba(255,255,255,0.05)",
-            borderRadius: 1,
-            border: "1px solid rgba(255,255,255,0.1)",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            background: "linear-gradient(180deg, #0F172A 0%, #1E3A8A 100%)",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
           }}
         >
-          <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
-            عدد المحادثات: {userStats.totalSessions || 0}
-          </Typography>
-          <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
-            إجمالي الرسائل: {userStats.totalMessages || 0}
-          </Typography>
-          <Typography variant="body2" sx={{ color: "white" }}>
-            آخر ظهور:{" "}
-            {userStats.lastActivity
-              ? (() => {
-                  const date = new Date(userStats.lastActivity);
-                  date.setHours(date.getHours() + 3);
-                  return `${date.toLocaleDateString("ar-EG")} - ${date.toLocaleTimeString("ar-EG", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}`;
-                })()
-              : "غير متاح"}
-          </Typography>
-        </Box>
-      )}
-    </Box>
-  </Box>
-
-  {/*  الجزء القابل للتمرير فقط (قائمة المحادثات) */}
-  <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1 }}>
-    {filteredSessions.map((session, index) => {
-      const currentSessionId = Number(
-        localStorage.getItem("currentSessionId")
-      );
-      return (
-        <ListItem
-          key={session.id}
-          selected={session.id === currentSessionId}
-          divider
-          sx={{
-            direction: "rtl",
-            justifyContent: "space-between",
-            textAlign: "right",
-            "&:hover": {
-              backgroundColor: "rgba(0,188,212,0.15)",
-              cursor: "pointer",
-            },
-            "&:hover .actions": {
-              opacity: 1,
-              transform: "translateX(0)",
-            },
-          }}
-        >
-          <ListItemText
-            primary={session.title || `محادثة ${index + 1}`}
-            onClick={() => {
-              localStorage.setItem("currentSessionId", session.id);
-              window.dispatchEvent(new Event("sessionSelected"));
-              handleDrawerClose();
-            }}
-          />
-
-          {/* أيقونات العمليات */}
+          {/* عنوان المحادثات */}
           <Box
-            className="actions"
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 0.5,
-              opacity: 0,
-              transform: "translateX(10px)",
-              transition: "opacity 0.3s ease, transform 0.3s ease",
+              p: 1,
+              borderBottom: "1px solid rgba(255,255,255,0.15)",
             }}
           >
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDownloadSession(session.id);
-              }}
-              title="تحميل PDF"
-              sx={{ color: "#fff" }}
-            >
-              <FileDownloadIcon fontSize="small" />
+            <IconButton onClick={handleDrawerClose}>
+              <ChevronRightIcon sx={{ color: "white" }} />
             </IconButton>
-
-            <IconButton
-              edge="end"
-              sx={{ color: "#fff" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRenameSession(session.id, session.title);
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-
-            <IconButton
-              edge="end"
-              sx={{ color: "#fff" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSessionToDelete(session.id);
-                setDeleteDialogOpen(true);
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
+            <Typography sx={{ ml: 1, fontWeight: "bold" }}>
+              المحادثات
+            </Typography>
           </Box>
-        </ListItem>
-      );
-    })}
-  </Box>
-</Drawer>
 
+          {/* زر إنشاء محادثة جديدة */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 1.5,
+            }}
+          >
+            <Button
+              sx={{
+                backgroundColor: "#1E3A8A",
+                color: "white",
+                borderRadius: "8px",
+                textTransform: "none",
+                "&:hover": { backgroundColor: "#1E3A8A" },
+              }}
+              onClick={handleCreateSession}
+            >
+              إنشاء محادثة جديدة +
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 0.5,
+            }}
+          >
+            <Button
+              sx={{
+                backgroundColor: "#1E3A8A",
+                color: "white",
+                borderRadius: "8px",
+                textTransform: "none",
+                "&:hover": { backgroundColor: "#1E3A8A" },
+              }}
+              onClick={() => setOpenCoursesDialog(true)}
+            >
+              المواد المنجزة
+            </Button>
+          </Box>
+
+          <Dialog
+            open={openCoursesDialog}
+            onClose={() => setOpenCoursesDialog(false)}
+            TransitionComponent={Grow}
+            transitionDuration={300}
+            PaperProps={{
+              sx: {
+                borderRadius: 5,
+                p: 2,
+                bgcolor: "#0e1d3a",
+                color: "white",
+                width: "70vw",
+                maxWidth: "960px",
+                maxHeight: "90vh",
+              },
+            }}
+            BackdropProps={{
+              sx: { backdropFilter: "blur(6px)" },
+            }}
+          >
+            <DialogTitle
+              sx={{ fontWeight: "bold", textAlign: "center", mb: 1 }}
+            >
+              المواد المنجزة
+            </DialogTitle>
+
+            <DialogContent
+              dividers
+              sx={{
+                direction: "rtl",
+                maxHeight: "65vh",
+                overflowY: "auto",
+                p: 2,
+              }}
+            >
+              {/* 🟢 Inputs للسنة والفصل */}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  mb: 3,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <TextField
+                  label="السنة"
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  sx={{
+                    width: 120,
+                    "& .MuiInputBase-root": {
+                      color: "white",
+                      bgcolor: "rgba(255,255,255,0.05)",
+                      borderRadius: 1,
+                      px: 1,
+                    },
+                    "& .MuiInputLabel-root": { color: "#90caf9" },
+                    "& .MuiInputBase-input": { textAlign: "center" },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.3)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.6)",
+                    },
+                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#90caf9",
+                    },
+                  }}
+                />
+                <TextField
+                  label="الفصل"
+                  type="number"
+                  value={semester}
+                  onChange={(e) => {
+                    let val = parseInt(e.target.value);
+                    if (val > 2) val = 2; // ❌ الحد الأعلى للفصل هو 2
+                    setSemester(val);
+                  }}
+                  sx={{
+                    width: 120,
+                    "& .MuiInputBase-root": {
+                      color: "white",
+                      bgcolor: "rgba(255,255,255,0.05)",
+                      borderRadius: 1,
+                      px: 1,
+                    },
+                    "& .MuiInputLabel-root": { color: "#90caf9" },
+                    "& .MuiInputBase-input": { textAlign: "center" },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.3)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.6)",
+                    },
+                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#90caf9",
+                    },
+                  }}
+                />
+              </Box>
+
+              {coursesByCategory && (
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    gap: 2,
+                    justifyContent: "center",
+                    alignItems: "start",
+                    justifyItems: "center",
+                  }}
+                >
+                  {Object.entries(coursesByCategory).map(
+                    ([categoryName, categoryData]) => {
+                      if (
+                        !categoryData["عدد_الساعات_المطلوبة"] ||
+                        categoryData["عدد_الساعات_المطلوبة"] === 0
+                      ) {
+                        return null;
+                      }
+
+                      const allChecked = categoryData["المساقات"].every(
+                        (c) => c.IsCompleted
+                      );
+
+                      return (
+                        <Box
+                          key={categoryName}
+                          sx={{
+                            background: "rgba(255,255,255,0.05)",
+                            borderRadius: 2,
+                            p: 2,
+                            border: "1px solid rgba(255,255,255,0.15)",
+                          }}
+                        >
+                          {/* عنوان القسم + زر اختيار الكل */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              mb: 3,
+                              flexDirection: "column",
+                              gap: 1.5,
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                fontWeight: "bold",
+                                color: "#90caf9",
+                                textAlign: "center",
+                              }}
+                            >
+                              {categoryName} (
+                              {categoryData["عدد_الساعات_المطلوبة"]} ساعة)
+                            </Typography>
+
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                color: allChecked ? "#ff8a8a" : "#8aff8a",
+                                borderColor: "rgba(255,255,255,0.3)",
+                                "&:hover": {
+                                  backgroundColor: "rgba(255,255,255,0.15)",
+                                },
+                              }}
+                              onClick={() => {
+                                setCoursesByCategory((prev) => ({
+                                  ...prev,
+                                  [categoryName]: {
+                                    ...prev[categoryName],
+                                    المساقات: prev[categoryName][
+                                      "المساقات"
+                                    ].map((course) => ({
+                                      ...course,
+                                      IsCompleted: !allChecked,
+                                    })),
+                                  },
+                                }));
+                              }}
+                            >
+                              {allChecked ? "إلغاء الكل" : "اختيار الكل"}
+                            </Button>
+                          </Box>
+
+                          {/* قائمة المساقات */}
+                          {categoryData["المساقات"].map((course) => (
+                            <Box
+                              key={course["رقم المساق"]}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mb: 1,
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={course.IsCompleted}
+                                onChange={() => {
+                                  setCoursesByCategory((prev) => ({
+                                    ...prev,
+                                    [categoryName]: {
+                                      ...prev[categoryName],
+                                      المساقات: prev[categoryName][
+                                        "المساقات"
+                                      ].map((c) =>
+                                        c["رقم المساق"] === course["رقم المساق"]
+                                          ? {
+                                              ...c,
+                                              IsCompleted: !c.IsCompleted,
+                                            }
+                                          : c
+                                      ),
+                                    },
+                                  }));
+                                }}
+                              />
+                              <Typography sx={{ mr: 1, fontSize: "0.9rem" }}>
+                                {course["اسم المساق"]}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      );
+                    }
+                  )}
+                </Box>
+              )}
+            </DialogContent>
+
+            <DialogActions sx={{ justifyContent: "center" }}>
+              <Button
+                variant="outlined"
+                sx={{
+                  color: "#eeeeeeff",
+                  "&:hover": { backgroundColor: "#933313ff", color: "white" },
+                }}
+                onClick={() => setOpenCoursesDialog(false)}
+              >
+                إغلاق
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  color: "#ffffffff",
+                  "&:hover": { backgroundColor: "#2115c7ff", color: "white" },
+                }}
+                onClick={async () => {
+                  const completedCodes = [];
+                  Object.values(coursesByCategory).forEach((cat) => {
+                    cat["المساقات"].forEach((c) => {
+                      if (c.IsCompleted)
+                        completedCodes.push(String(c["رقم المساق"]));
+                    });
+                  });
+
+                  console.log("✅ الكود قبل الحفظ:", completedCodes);
+
+                  await axios.post(
+                    "https://localhost:7017/api/Courses/save-completed",
+                    {
+                      major: specialty,
+                      completedCourseCodes: completedCodes,
+                    },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+
+                  console.log("💾 تم إرسال البيانات للباك:", {
+                    major: specialty,
+                    completedCourseCodes: completedCodes,
+                  });
+                  localStorage.setItem("year", String(year));
+                  localStorage.setItem("semester", String(semester));
+                  localStorage.setItem(
+                    "completedCourses",
+                    JSON.stringify(completedCodes)
+                  );
+                  alert("تم حفظ المواد بنجاح");
+                  setOpenCoursesDialog(false);
+                }}
+              >
+                حفظ
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* مربع البحث */}
+          <Box sx={{ p: 1.5 }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="ابحث في المحادثات..."
+              size="small"
+              value={searchQuery}
+              dir="rtl"
+              sx={{
+                bgcolor: "rgba(255,255,255,0.1)",
+                borderRadius: "8px",
+                input: { color: "white" },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.2)",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#00bcd4",
+                },
+              }}
+              onChange={async (e) => {
+                const query = e.target.value;
+                setSearchQuery(query);
+                if (!query.trim()) {
+                  setSearchResults([]);
+                  return;
+                }
+                const results = await searchMessages(query);
+                setSearchResults(results);
+              }}
+            />
+
+            {/* 🔹 صندوق الإحصائيات */}
+            {userStats && (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  mt: 2,
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 1,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+                  عدد المحادثات: {userStats.totalSessions || 0}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "white", mb: 0.5 }}>
+                  إجمالي الرسائل: {userStats.totalMessages || 0}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "white" }}>
+                  آخر ظهور:{" "}
+                  {userStats.lastActivity
+                    ? (() => {
+                        const date = new Date(userStats.lastActivity);
+                        date.setHours(date.getHours() + 3);
+                        return `${date.toLocaleDateString(
+                          "ar-EG"
+                        )} - ${date.toLocaleTimeString("ar-EG", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}`;
+                      })()
+                    : "غير متاح"}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/*  الجزء القابل للتمرير فقط (قائمة المحادثات) */}
+        <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1 }}>
+          {filteredSessions.map((session, index) => {
+            const currentSessionId = Number(
+              localStorage.getItem("currentSessionId")
+            );
+            return (
+              <ListItem
+                key={session.id}
+                selected={session.id === currentSessionId}
+                divider
+                sx={{
+                  direction: "rtl",
+                  justifyContent: "space-between",
+                  textAlign: "right",
+                  "&:hover": {
+                    backgroundColor: "rgba(0,188,212,0.15)",
+                    cursor: "pointer",
+                  },
+                  "&:hover .actions": {
+                    opacity: 1,
+                    transform: "translateX(0)",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={session.title || `محادثة ${index + 1}`}
+                  onClick={() => {
+                    localStorage.setItem("currentSessionId", session.id);
+                    window.dispatchEvent(new Event("sessionSelected"));
+                    handleDrawerClose();
+                  }}
+                />
+
+                {/* أيقونات العمليات */}
+                <Box
+                  className="actions"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    opacity: 0,
+                    transform: "translateX(10px)",
+                    transition: "opacity 0.3s ease, transform 0.3s ease",
+                  }}
+                >
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadSession(session.id);
+                    }}
+                    title="تحميل PDF"
+                    sx={{ color: "#fff" }}
+                  >
+                    <FileDownloadIcon fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    edge="end"
+                    sx={{ color: "#fff" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRenameSession(session.id, session.title);
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    edge="end"
+                    sx={{ color: "#fff" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSessionToDelete(session.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </ListItem>
+            );
+          })}
+        </Box>
+      </Drawer>
     </>
   );
 }
