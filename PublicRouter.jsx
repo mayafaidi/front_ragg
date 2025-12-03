@@ -16,6 +16,7 @@ const isTokenExpired=(token)=>{
 const PublicRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   const expired = isTokenExpired(token);
+  console.log(expired)
   if (expired) {
   localStorage.removeItem("token");
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, IconButton, TextField, Typography, Paper } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import MenuAppBar from "../../component/navbar/MenuAppBar";
@@ -23,6 +23,7 @@ import StyledMarkdown from "../../StyleMarkDown";
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const inputRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
@@ -115,166 +116,179 @@ export default function Home() {
       await fetchAllSessions(true);
     }
   };
-  const streamText = (finalText, messageId) => {
-    let index = 0;
+  
+  const botMessageRef = useRef("");
+const streamText = (finalText, messageId) => {
+  let index = 0;
+  const step = 5; // عدد الحروف في كل تحديث
+  const interval = setInterval(() => {
+    botMessageRef.current = finalText.slice(0, index);
 
-    const interval = setInterval(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
+    // تحديث جزئي كل دفعة كبيرة
+    if (index % 20 === 0 || index + step >= finalText.length) {
+      setMessages(prev =>
+        prev.map(msg =>
           msg.id === messageId
-            ? { ...msg, text: finalText.slice(0, index) }
+            ? { ...msg, text: botMessageRef.current }
             : msg
         )
       );
-
-      index++;
-
-      if (index > finalText.length) clearInterval(interval);
-    }, 25); // ⚡ السرعة (كل 25ms حرف)
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || sending) return;
-
-    const token = localStorage.getItem("token");
-    const sessionId = localStorage.getItem("currentSessionId");
-    const majorCode = localStorage.getItem("currentSpecialty") || "General";
-    const major = majorName[majorCode] || majorCode || "غير معروف";
-
-    if (!token || !sessionId) return;
-
-    const userMsg = {
-      id: `u-${Date.now()}`,
-      sender: "user",
-      text: input,
-      isTyping: false,
-      major: major,
-    };
-
-    const typingId = `typing-${Date.now()}`;
-    const typingMsg = {
-      id: typingId,
-      sender: "bot",
-      text: "يكتب…",
-      isTyping: true,
-    };
-
-    setMessages((prev) => [...prev, userMsg, typingMsg]);
-
-    if (messages.length <= 1) {
-      await renamesession(Number(sessionId), userMsg.text.slice(0, 20));
-      await fetchAllSessions(true);
-      window.dispatchEvent(new Event("sessionsUpdated"));
     }
 
-    userMsg.time = new Date().toLocaleTimeString("EG", {
+    index += step;
+    if (index >= finalText.length) {
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId ? { ...msg, text: finalText } : msg
+        )
+      );
+      clearInterval(interval);
+    }
+  }, 1);
+};
+ const handleSend = async () => {
+  if (!inputRef.current.value.trim() || sending) return;
+  const token = localStorage.getItem("token");
+  const sessionId = localStorage.getItem("currentSessionId");
+  const majorCode = localStorage.getItem("currentSpecialty") || "General";
+  const major = majorName[majorCode] || majorCode || "غير معروف";
+  if (!token || !sessionId) return;
+
+  const userMsg = {
+    id: `u-${Date.now()}`,
+    sender: "user",
+    text: inputRef.current.value,
+    isTyping: false,
+    major: major,
+  };
+
+  const typingId = `typing-${Date.now()}`;
+  const typingMsg = {
+    id: typingId,
+    sender: "bot",
+    text: "يكتب…",
+    isTyping: true,
+  };
+
+  setMessages((prev) => [...prev, userMsg, typingMsg]);
+  setInput("");
+  setSending(true);
+
+  if (messages.length <= 1) {
+    await renamesession(Number(sessionId), userMsg.text.slice(0, 20));
+    await fetchAllSessions(true);
+    window.dispatchEvent(new Event("sessionsUpdated"));
+  }
+
+  let fullText = "";
+  let isErrorMessage = false;
+
+  try {
+    // جلب المواد المنجزة
+    const completedCoursesResponse = await fetch(
+      `https://localhost:7017/api/Courses/completed/${majorCode}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const completedCourses = await completedCoursesResponse.json();
+
+    // إرسال الرسالة للسيرفر
+    const response = await fetch(
+      "https://localhost:7017/api/Chats/send-message",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId: Number(sessionId),
+          role: "user",
+          content: userMsg.text,
+          major: majorCode,
+          completedCourses: completedCourses,
+          year: localStorage.getItem("year") || "1",
+          semester: localStorage.getItem("semester") || "1",
+        }),
+      }
+    );
+
+    if (response.status === 204) {
+      fullText =
+        "⚠️ لا يوجد رد من المساعد، تأكد أن سؤالك ضمن نطاق النظام الأكاديمي.";
+      isErrorMessage = true;
+    } else {
+      try {
+        const data = await response.json();
+        const botMsg = data?.data || data;
+        if (botMsg?.content) fullText = botMsg.content;
+        else if (botMsg?.message) fullText = botMsg.message;
+        else if (botMsg?.data?.content) fullText = botMsg.data.content;
+        else {
+          fullText = "⚠️ لم يتم استلام رد واضح من المساعد. (message=null)";
+          isErrorMessage = true;
+        }
+      } catch (err) {
+        console.error("فشل قراءة الرد:", err);
+        fullText = "⚠️ حدث خطأ أثناء قراءة الرد من الخادم.";
+        isErrorMessage = true;
+      }
+    }
+
+if (isErrorMessage) {
+  await fetch("https://localhost:7017/api/Chats/send-message", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sessionId: Number(sessionId),
+      role: "bot",
+      content: fullText, // رسالة الخطأ نفسها
+      major: majorCode,
+      isErrorMessage: true,
+    }),
+  });
+}
+    const displayTime = new Date().toLocaleTimeString("EG", {
       hour: "2-digit",
       minute: "2-digit",
     });
+    const botMessageId = `b-${Date.now()}`;
 
-    setInput("");
-    setSending(true);
+    // استبدال رسالة "يكتب..." برد فعلي
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === typingId
+          ? {
+              id: botMessageId,
+              sender: "bot",
+              text: "",
+              isTyping: false,
+              isStreaming: true,
+              time: displayTime,
+            }
+          : m
+      )
+    );
 
-    try {
-      // 🟦 جلب المواد المنجزة
-      const completedCoursesResponse = await fetch(
-        `https://localhost:7017/api/Courses/completed/${majorCode}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const completedCourses = await completedCoursesResponse.json();
-      console.log(completedCourses, "✅ المواد المنجزة");
-
-      // 🟦 إرسال الرسالة للسيرفر
-      const response = await fetch(
-        "https://localhost:7017/api/Chats/send-message",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            sessionId: Number(sessionId),
-            role: "user",
-            content: userMsg.text,
-            major: majorCode,
-            completedCourses: completedCourses,
-            year: localStorage.getItem("year") || "1",
-            semester: localStorage.getItem("semester") || "1",
-          }),
-        }
-      );
-
-      // 🟨 هنا نحل المشكلة إذا السيرفر رجّع 204 أو رد فاضي
-      let fullText = "";
-      if (response.status === 204) {
-        fullText =
-          "⚠️ لا يوجد رد من المساعد، تأكد أن سؤالك ضمن نطاق النظام الأكاديمي.";
-      } else {
-        try {
-          const data = await response.json();
-          console.log("📥 الرد القادم من السيرفر:", data);
-          const botMsg = data?.data || data;
-
-          // ✅ التعامل مع كل الحالات اللي ممكن ترجع من السيرفر
-          if (botMsg?.content) {
-            fullText = botMsg.content;
-          } else if (botMsg?.message) {
-            fullText = botMsg.message;
-          } else if (botMsg?.data?.content) {
-            fullText = botMsg.data.content;
-          } else {
-            fullText = "⚠️ لم يتم استلام رد واضح من المساعد. (message=null)";
-          }
-        } catch (err) {
-          console.error("⚠️ فشل قراءة الرد:", err);
-          fullText = "⚠️ حدث خطأ أثناء قراءة الرد من الخادم.";
-        }
-      }
-
-      // 🟢 لو في رد فعلي أو نص افتراضي
-      if (fullText) {
-        const displayTime = new Date().toLocaleTimeString("EG", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        const botMessageId = `b-${Date.now()}`;
-
-        // استبدال رسالة "يكتب..." برد فعلي
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === typingId
-              ? {
-                  id: botMessageId,
-                  sender: "bot",
-                  text: "",
-                  isTyping: false,
-                  isStreaming: true,
-                  time: displayTime,
-                }
-              : m
-          )
-        );
-
-        // 🟦 شغّل الكتابة حرف حرف
-        setTimeout(() => {
-          streamText(fullText, botMessageId);
-        }, 100);
-      }
-    } catch (error) {
-      console.error("فشل إرسال الرسالة:", error);
-      setMessages((prev) => prev.filter((m) => m.id !== typingId));
-    } finally {
-      setBotTyping(false);
-      setSending(false);
-    }
-  };
+    // بث النص بشكل سلس
+    setTimeout(() => streamText(fullText, botMessageId), 100);
+  } catch (error) {
+    console.error("فشل إرسال الرسالة:", error);
+    setMessages((prev) => prev.filter((m) => m.id !== typingId));
+  } finally {
+    setBotTyping(false);
+    setSending(false);
+    inputRef.current.value = "";
+  }
+};
 
   // 📋 دالة النسخ
   const handleCopy = async (text, id) => {
@@ -480,8 +494,7 @@ export default function Home() {
               variant="outlined"
               placeholder="اكتب عزيزي الطالب..."
               dir="rtl"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              inputRef={inputRef}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -525,7 +538,8 @@ export default function Home() {
               )}
             </IconButton>
           </Box>
-
+          
+           
           <Footer />
         </Box>
       </Box>
