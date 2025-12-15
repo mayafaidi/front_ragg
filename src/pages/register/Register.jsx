@@ -74,8 +74,7 @@ export default function Register() {
       );
 
       if (response.data.success) {
-       // alert("Registration successful! Please log in.");
-       // navigate("/login");
+       
         toast.success(" Registration successful! Please log in.", {
           position: "top-right",
           autoClose: 2500,
@@ -83,7 +82,6 @@ export default function Register() {
         });
         setTimeout(() => navigate("/login"), 2500);
       } else {
-        //alert("Registration failed. Please try again.");
        toast.error("Registration failed. Please try again.", {
           position: "top-right",
           autoClose: 3000,

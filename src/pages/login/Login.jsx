@@ -54,8 +54,7 @@ export default function Login() {
         "https://localhost:7017/api/Accounts/Login",
         data
       );
-      // console.log(response)
-      // console.log()
+      
       localStorage.setItem('token',response.data.data.token)
      
 
@@ -70,7 +69,7 @@ export default function Login() {
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          theme: "light", // خلفية بيضاء
+          theme: "light", 
           transition: Bounce,
         }
       );
@@ -79,7 +78,6 @@ export default function Login() {
     } catch (error) {
       const message = error.response?.data.message || error.message;
       if (message.toLowerCase().includes("confirm")) {
-        // رسالة الخطأ بسبب البريد غير مفعل
         toast.error(
           <Box
             sx={{
@@ -100,7 +98,7 @@ export default function Login() {
               sx={{
                 textTransform: "none",
                 fontWeight: "bold",
-                backgroundColor: "#1E3A8A", // أزرق غامق ليناسب الأبيض
+                backgroundColor: "#1E3A8A", 
                 color: "#fff",
                 "&:hover": { backgroundColor: "#152A5C" },
               }}
@@ -114,11 +112,11 @@ export default function Login() {
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
-            theme: "light", // خلفية بيضاء
+            theme: "light", 
           }
         );
       } else {
-        // أي خطأ آخر
+        
         toast.error(
           <Typography sx={{ color: "#e94e77" }}>{message}</Typography>,
           {
@@ -205,8 +203,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextField
-            // data-aos="fade-left"
-            // data-aos-duration="1200"
+            
             {...register("email")}
             placeholder="Email"
             variant="outlined"
@@ -224,8 +221,7 @@ export default function Login() {
           />
 
           <TextField
-            // data-aos="fade-right"
-            // data-aos-duration="1400"
+            
             {...register("password")}
             placeholder="Password"
             variant="outlined"
@@ -243,8 +239,7 @@ export default function Login() {
           />
 
           <Box
-            //  data-aos="fade-down"
-            //  data-aos-duration="1500"
+            
             textAlign="left"
             mb={2}
           >
@@ -263,8 +258,7 @@ export default function Login() {
           </Box>
 
           <Button
-            //  data-aos="fade-down"
-            //   data-aos-duration="1500"
+            
             className={`${style.shakeBtn}`}
             type="submit"
             variant="contained"
@@ -289,8 +283,7 @@ export default function Login() {
           </Button>
 
           <Typography
-            //  data-aos="fade-down"
-            //   data-aos-duration="1500"
+           
             mt={2}
             fontSize="0.9rem"
             color="gray"

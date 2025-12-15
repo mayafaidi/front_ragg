@@ -6,7 +6,7 @@ export default function VerifiedPage() {
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);
-  const status = params.get("status") || "success"; // default success
+  const status = params.get("status") || "success"; 
 
   const isSuccess = status === "success";
 

@@ -42,7 +42,8 @@ import { useChat } from "../../context/ChatContext";
 import Avatar from "@mui/material/Avatar";
 import PersonIcon from "@mui/icons-material/Person";
 import { jwtDecode } from "jwt-decode";
-
+import { toast, Bounce } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 const drawerWidth = 280;
 
 const MyAppBar = styled(MuiAppBar, {
@@ -263,8 +264,11 @@ export default function MenuAppBar({
           },
         }
       );
-
-      alert(" تم تغيير كلمة المرور بنجاح");
+  toast.success("تم تغيير كلمة المرور بنجاح ✅", {
+      position: "top-right",
+      autoClose: 2500,
+      transition: Bounce,
+    });
     } catch (error) {
       alert(error.response?.data?.message || " فشل تغيير كلمة المرور");
     } finally {
@@ -284,7 +288,7 @@ export default function MenuAppBar({
 
         let data = res.data;
 
-        //
+        
         const completedRes = await axios.get(
           `https://localhost:7017/api/Courses/completed/${specialty}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -803,7 +807,7 @@ export default function MenuAppBar({
         </DialogActions>
       </Dialog>
 
-      {/*  Drawer المحادثات */}
+     
       <Drawer
         sx={{
           width: drawerWidth,
@@ -829,7 +833,7 @@ export default function MenuAppBar({
             boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
           }}
         >
-          {/* عنوان المحادثات */}
+          
           <Box
             sx={{
               display: "flex",
@@ -846,7 +850,6 @@ export default function MenuAppBar({
             </Typography>
           </Box>
 
-          {/* زر إنشاء محادثة جديدة */}
           <Box
             sx={{
               display: "flex",
@@ -926,7 +929,6 @@ export default function MenuAppBar({
                 p: 2,
               }}
             >
-              {/* 🟢 Inputs للسنة والفصل */}
               <Box
                 sx={{
                   display: "flex",
@@ -968,7 +970,7 @@ export default function MenuAppBar({
                   value={semester}
                   onChange={(e) => {
                     let val = parseInt(e.target.value);
-                    if (val > 2) val = 2; // ❌ الحد الأعلى للفصل هو 2
+                    if (val > 2) val = 2; 
                     setSemester(val);
                   }}
                   sx={{
@@ -1028,7 +1030,6 @@ export default function MenuAppBar({
                             border: "1px solid rgba(255,255,255,0.15)",
                           }}
                         >
-                          {/* عنوان القسم + زر اختيار الكل */}
                           <Box
                             sx={{
                               display: "flex",
@@ -1079,7 +1080,6 @@ export default function MenuAppBar({
                             </Button>
                           </Box>
 
-                          {/* قائمة المساقات */}
                           {categoryData["المساقات"].map((course) => (
                             <Box
                               key={course["رقم المساق"]}
@@ -1172,7 +1172,11 @@ export default function MenuAppBar({
                     "completedCourses",
                     JSON.stringify(completedCodes)
                   );
-                  alert("تم حفظ المواد بنجاح");
+                   toast.success( "تم حفظ المواد بنجاح ", {
+      position: "top-right",
+      autoClose: 2500,
+      transition: Bounce,
+    });
                   setOpenCoursesDialog(false);
                 }}
               >
@@ -1181,7 +1185,6 @@ export default function MenuAppBar({
             </DialogActions>
           </Dialog>
 
-          {/* مربع البحث */}
           <Box sx={{ p: 1.5 }}>
             <TextField
               fullWidth
@@ -1213,7 +1216,6 @@ export default function MenuAppBar({
               }}
             />
 
-            {/* 🔹 صندوق الإحصائيات */}
             {userStats && (
               <Box
                 sx={{
@@ -1251,7 +1253,6 @@ export default function MenuAppBar({
           </Box>
         </Box>
 
-        {/*  الجزء القابل للتمرير فقط (قائمة المحادثات) */}
         <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1 }}>
           {filteredSessions.map((session, index) => {
             const currentSessionId = Number(
@@ -1285,7 +1286,6 @@ export default function MenuAppBar({
                   }}
                 />
 
-                {/* أيقونات العمليات */}
                 <Box
                   className="actions"
                   sx={{
@@ -1336,6 +1336,7 @@ export default function MenuAppBar({
           })}
         </Box>
       </Drawer>
+      <ToastContainer />
     </>
   );
 }

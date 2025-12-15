@@ -66,7 +66,6 @@ export default function ResetPass() {
       );
 
       if (response.status === 200) {
-       // setMessage("Password has been changed successfully!");
          toast.success("✅ Password has been changed successfully!", {
           position: "top-right",
           autoClose: 3000,

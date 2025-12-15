@@ -4,27 +4,26 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Cairo', sans-serif !important;
-  scrollbar-width: thin;       /* حجم ال scroll bar */
-  scrollbar-color: #00BCD4 #1E3A8A; /* thumb color, track color */
+  scrollbar-width: thin;       
+  scrollbar-color: #00BCD4 #1E3A8A; 
 }
-/* Chrome, Edge, Safari */
 *::-webkit-scrollbar {
-  width: 8px;                  /* عرض الـ scrollbar */
+  width: 8px;                 
 }
 
 *::-webkit-scrollbar-track {
-  background: #1E3A8A;         /* لون المسار */
+  background: #1E3A8A;         
   border-radius: 10px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #00BCD4;   /* لون المقبض */
+  background-color: #00BCD4;   
   border-radius: 10px;
-  border: 1px solid #1E3A8A;  /* يعطي مسافة حول المقبض */
+  border: 1px solid #1E3A8A; 
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: #0097a7;   /* لون عند hover */
+  background-color: #0097a7;   
 }
 h1, h2, h3,h4 {
   font-family: 'Cairo', sans-serif !important;
@@ -39,6 +38,6 @@ body{
   color: white ;
 }
 ::selection {
-  background: rgba(0, 188, 212, 0.5); /* اللون الخلفية عند التحديد */
-  color: white; /* لون النص المحدد */
+  background: rgba(0, 188, 212, 0.5); 
+  color: white; 
 }

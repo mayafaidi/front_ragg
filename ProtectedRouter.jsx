@@ -8,15 +8,15 @@ const isTokenExpired=(token)=>{
     const currentTime = Date.now() / 1000;
 
     console.log(decoded.exp)
-    return decoded.exp < currentTime; // true = expired
+    return decoded.exp < currentTime; 
   } catch (e) {
-    return true; // invalid token = treat as expired
+    return true; 
   }
 
 } 
 const ProtectedRouter = ({ children }) => {
   const token = localStorage.getItem("token");
-  const isAuthenticated = token && !isTokenExpired(token); // التحقق من الصلاحية
+  const isAuthenticated = token && !isTokenExpired(token); 
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }

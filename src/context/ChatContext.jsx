@@ -84,16 +84,14 @@ const deleteSession = async (sessionId) => {
 
     const current = localStorage.getItem("currentSessionId");
     if (Number(current) === sessionId) {
-      // إنشاء جلسة جديدة مباشرة
       const newSession = await createSession();
       if (newSession) {
         localStorage.setItem("currentSessionId", newSession.id);
-        window.dispatchEvent(new Event("sessionSelected")); // تحديث الرسائل للجلسة الجديدة
+        window.dispatchEvent(new Event("sessionSelected")); 
       }
     }
 
     window.dispatchEvent(new Event("sessionsUpdated"));
-    // console.log(`تم حذف الجلسة رقم ${sessionId}`);
   } catch (error) {
     console.error("فشل حذف الجلسة:", error);
   }
@@ -114,9 +112,8 @@ const response = await axios.put(`https://localhost:7017/api/Chats/sessions/${se
       });
 
    const updatedSession = response.data;
-  //  console.log(response.data);
+  
  window.dispatchEvent(new Event("sessionsUpdated"));
-    // console.log(" Session renamed:", updatedSession);
     return updatedSession;
 
 }
@@ -151,7 +148,6 @@ const searchMessages = async (query) => {
 };
 
 const handleDownloadSession = async (id) => {
-  // console.log(id);
   const token = localStorage.getItem("token"); 
   try {
       const response = await axios.get(`https://localhost:7017/api/Chats/${id}/export`, {

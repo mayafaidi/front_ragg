@@ -55,7 +55,7 @@ export default function ForgetPassword() {
 
       console.log("Response:", response.data);
       setMessage("A verification code has been sent to your email!");
-// ✅ Toast نجاح
+
     toast.success("📧 A verification code has been sent to your email!", {
       position: "top-right",
       autoClose: 3000,

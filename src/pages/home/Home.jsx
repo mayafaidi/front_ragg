@@ -16,7 +16,7 @@ const majorName = {
   CAP: "علم الحاسوب في سوق العمل ",
   CAP_SW: " علم الحاسوب تركيز برمجيات",
   CAP_AI: "علم الحاسوب تركيز الذكاء الاصطناعي ",
-  General: " عام", // 👈 اختياري في حال المستخدم ما اختار تخصص
+  General: " عام", 
 };
 import Markdown from "react-markdown";
 import StyledMarkdown from "../../StyleMarkDown";
@@ -63,7 +63,6 @@ export default function Home() {
           : null,
       }));
 
-      // 🟢 إذا ما في رسائل في الجلسة، نضيف الترحيب الديناميكي هون
       if (!msgs || msgs.length === 0) {
         const username = localStorage.getItem("username") || "عزيزي الطالب";
         const majorCode = localStorage.getItem("currentSpecialty") || "General";
@@ -120,11 +119,11 @@ export default function Home() {
   const botMessageRef = useRef("");
 const streamText = (finalText, messageId) => {
   let index = 0;
-  const step = 5; // عدد الحروف في كل تحديث
+  const step = 5; 
   const interval = setInterval(() => {
     botMessageRef.current = finalText.slice(0, index);
 
-    // تحديث جزئي كل دفعة كبيرة
+    
     if (index % 20 === 0 || index + step >= finalText.length) {
       setMessages(prev =>
         prev.map(msg =>
@@ -184,7 +183,6 @@ const streamText = (finalText, messageId) => {
   let isErrorMessage = false;
 
   try {
-    // جلب المواد المنجزة
     const completedCoursesResponse = await fetch(
       `https://localhost:7017/api/Courses/completed/${majorCode}`,
       {
@@ -197,7 +195,6 @@ const streamText = (finalText, messageId) => {
     );
     const completedCourses = await completedCoursesResponse.json();
 
-    // إرسال الرسالة للسيرفر
     const response = await fetch(
       "https://localhost:7017/api/Chats/send-message",
       {
@@ -250,7 +247,7 @@ if (isErrorMessage) {
     body: JSON.stringify({
       sessionId: Number(sessionId),
       role: "bot",
-      content: fullText, // رسالة الخطأ نفسها
+      content: fullText, 
       major: majorCode,
       isErrorMessage: true,
     }),
@@ -262,7 +259,7 @@ if (isErrorMessage) {
     });
     const botMessageId = `b-${Date.now()}`;
 
-    // استبدال رسالة "يكتب..." برد فعلي
+   
     setMessages((prev) =>
       prev.map((m) =>
         m.id === typingId
@@ -278,7 +275,7 @@ if (isErrorMessage) {
       )
     );
 
-    // بث النص بشكل سلس
+   
     setTimeout(() => streamText(fullText, botMessageId), 100);
   } catch (error) {
     console.error("فشل إرسال الرسالة:", error);
@@ -290,7 +287,6 @@ if (isErrorMessage) {
   }
 };
 
-  // 📋 دالة النسخ
   const handleCopy = async (text, id) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -312,8 +308,7 @@ if (isErrorMessage) {
     const fullMajor =
       majorName[savedMajorCode] || savedMajorCode || "غير معروف";
 
-    // نحفظه مؤقتًا في state أو نطبعه للتأكد
-    // console.log("📘 التخصص الحالي:", fullMajor);
+   
   }, []);
 
   useEffect(() => {
@@ -413,7 +408,7 @@ if (isErrorMessage) {
                       sx={{
                         fontSize: "13px",
                         fontWeight: "bold",
-                        // color: "#00BCD4",
+                        
                         mb: 0.5,
                         textAlign: "right",
                         borderBottom: "1px solid",
@@ -511,7 +506,6 @@ if (isErrorMessage) {
                     borderColor: "#1E3A8A",
                     boxShadow: "0 0 8px rgba(0,188,212,0.4)",
                   },
-                  // "&:hover fieldset": { borderColor: "rgba(0,0,0,0.1)" },
                 },
                 input: { color: "black", fontFamily: "'Cairo', sans-serif" },
               }}
@@ -526,8 +520,8 @@ if (isErrorMessage) {
                 borderRadius: "10px",
 
                 "&:hover": {
-                  backgroundColor: "#1e3982ff", // نفس اللون بدون تغيّر
-                  transform: "none", // منع أي حركة
+                  backgroundColor: "#1e3982ff",
+                  transform: "none",
                 },
               }}
             >
